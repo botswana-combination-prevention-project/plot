@@ -7,6 +7,12 @@ from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
 from edc_map.site_mappers import site_mappers
 from edc_map.model_mixins import MapperModelMixin
 
+from edc_base.model.validators.date import datetime_not_future
+
+from survey.validators import date_in_survey
+
+from .choices import PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
+
 from bcpp.manager_mixins import BcppSubsetManagerMixin
 
 from .choices import PLOT_STATUS, SELECTED
@@ -21,6 +27,22 @@ class PlotManager(BcppSubsetManagerMixin, models.Manager):
 
     def get_by_natural_key(self, plot_identifier):
         return self.get(plot_identifier=plot_identifier)
+
+
+class PlotLogManager(BcppSubsetManagerMixin, models.Manager):
+
+    lookup = ['plot']
+
+    def get_by_natural_key(self, plot_identifier):
+        return self.get(plot__plot_identifier=plot_identifier)
+
+
+class PlotLogEntryManager(BcppSubsetManagerMixin, models.Manager):
+
+    lookup = ['plot_log', 'plot']
+
+    def get_by_natural_key(self, report_datetime, plot_identifier):
+        return self.get(report_datetime=report_datetime, plot__plot_identifier=plot_identifier)
 
 
 class Plot(MapperModelMixin, BaseUuidModel):
@@ -153,7 +175,7 @@ class Plot(MapperModelMixin, BaseUuidModel):
         help_text=('datetime that plot is enrolled into BHS. '
                    'Updated by bcpp_subject.subject_consent post_save'))
 
-    objects = PlotManager()
+    # objects = PlotManager()
 
     history = HistoricalRecords()
 
@@ -185,3 +207,73 @@ class Plot(MapperModelMixin, BaseUuidModel):
         app_label = 'plot'
         ordering = ['-plot_identifier', ]
         unique_together = (('gps_target_lat', 'gps_target_lon'),)
+
+
+class PlotLog(BaseUuidModel):
+    """A system model to track an RA\'s attempts to confirm a Plot (related)."""
+
+    plot = models.OneToOneField(Plot)
+
+    history = HistoricalRecords()
+
+    # objects = PlotLogManager()
+
+    def __str__(self):
+        return str(self.plot)
+
+    def natural_key(self):
+        return self.plot.natural_key()
+    natural_key.dependencies = ['plot.plot']
+
+    class Meta:
+        app_label = 'plot'
+
+
+class PlotLogEntry(BaseUuidModel):
+    """A model completed by the user to track an RA\'s attempts to confirm a Plot."""
+    plot_log = models.ForeignKey(PlotLog)
+
+    report_datetime = models.DateTimeField(
+        verbose_name="Report date",
+        validators=[datetime_not_future, date_in_survey])
+
+    log_status = models.CharField(
+        verbose_name='What is the status of this plot?',
+        max_length=25,
+        choices=PLOT_LOG_STATUS)
+
+    reason = models.CharField(
+        verbose_name='If inaccessible, please indicate the reason.',
+        max_length=25,
+        blank=True,
+        null=True,
+        choices=INACCESSIBILITY_REASONS)
+
+    reason_other = models.CharField(
+        verbose_name='If Other, specify',
+        max_length=100,
+        blank=True,
+        null=True)
+
+    comment = EncryptedTextField(
+        verbose_name="Comments",
+        max_length=250,
+        null=True,
+        blank=True,
+        help_text=('IMPORTANT: Do not include any names or other personally identifying '
+                   'information in this comment'))
+
+    # objects = PlotLogEntryManager()
+
+    history = HistoricalRecords()
+
+    def natural_key(self):
+        return (self.report_datetime, ) + self.plot_log.natural_key()
+    natural_key.dependencies = ['plot.plot_log']
+
+    def __str__(self):
+        return '{} ({})'.format(self.plot_log, self.report_datetime.strftime('%Y-%m-%d'))
+
+    class Meta:
+        app_label = 'plot'
+        unique_together = ('plot_log', 'report_datetime')

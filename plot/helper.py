@@ -1,12 +1,13 @@
+import pytz
+
 from django.apps import apps as django_apps
 
-from .constants import CONFIRMED, UNCONFIRMED, RESIDENTIAL_NOT_HABITABLE, NON_RESIDENTIAL, INACCESSIBLE, ACCESSIBLE
 from edc_constants.constants import CLOSED
 from edc_map.site_mappers import site_mappers
 from edc_device.constants import CLIENT
-import pytz
 from edc_base.utils import get_utcnow
-from plot.plot_identifier import PlotIdentifier
+
+from .plot_identifier import PlotIdentifier
 
 app_config = django_apps.get_app_config('plot')
 edc_device_app_config = django_apps.get_app_config('edc_device')
@@ -25,8 +26,11 @@ class Helper:
     def __init__(self, plot):
         for field in plot._meta.get_fields():
             attr = field.name
-            attr = 'plot_id' if attr == 'id' else attr
-            setattr(self, attr, getattr(plot, field.name))
+            try:
+                field.to  # avoid relation fields
+            except AttributeError:
+                attr = 'plot_id' if attr == 'id' else attr
+                setattr(self, attr, getattr(plot, field.name))
 
     def get_identifier(self):
         identifier = self.plot_identifier
@@ -47,7 +51,7 @@ class Helper:
             if not self.plot_id and edc_device_app_config.role == CLIENT and self.htc:
                 raise PlotHelperError(
                     'Blocking attempt to modify plot assigned to the HTC campaign. Got {}.'.format(
-                        self.plot.plot_identifier))
+                        self.plot_identifier))
             self.map_area_or_raise()
             self.enroll_or_raise()
             if self.household_count > app_config.max_households:
@@ -90,7 +94,7 @@ class Helper:
 #                 continue
 #             allowed_to_delete.append(hh)
 #         return allowed_to_delete
-# 
+#
 #     def validate_number_to_delete(self, instance, existing_no, using=None):
 #             if (existing_no in [0, 1] or instance.household_count == existing_no or
 #                     instance.household_count > existing_no or instance.household_count == 0):
@@ -103,7 +107,7 @@ class Helper:
 #                     else:
 #                         return del_valid
 #                 return False
-# 
+#
 #     def delete_households_for_non_residential(self, instance, existing_no, using=None):
 #         Household = django_apps.get_model('bcpp_household', 'Household')
 #         HouseholdStructure = django_apps.get_model('bcpp_household', 'HouseholdStructure')
@@ -125,7 +129,7 @@ class Helper:
 #             return False
 #         except DatabaseError:
 #             return False
-# 
+#
 #     def delete_household(self, instance, existing_no, using=None):
 #         Household = django_apps.get_model('bcpp_household', 'Household')
 #         HouseholdStructure = django_apps.get_model('bcpp_household', 'HouseholdStructure')
@@ -152,14 +156,14 @@ class Helper:
 #             return False
 #         except DatabaseError:
 #             return False
-# 
+#
 #     def delete_confirmed_household(self, instance, existing_no, using=None):
 #         """ Deletes required number of households. """
 #         if instance.status in [RESIDENTIAL_NOT_HABITABLE, NON_RESIDENTIAL]:
 #             return self.delete_households_for_non_residential(instance, existing_no, using)
 #         else:
 #             return self.delete_household(instance, existing_no, using)
-# 
+#
 #     def safe_delete_households(self, existing_no, instance=None, using=None):
 #         """ Deletes households and HouseholdStructure if member_count==0 and no log entry.
 #             If there is a household log entry, this DOES NOT delete the household
@@ -167,12 +171,12 @@ class Helper:
 #         instance = instance or self
 #         using = using or 'default'
 #         return self.delete_confirmed_household(instance, existing_no)
-# 
+#
 #     def create_or_delete_households(self, instance=None, using=None):
 #         """Creates or deletes households to try to equal the number of households reported on the plot instance.
-# 
+#
 #         This gets called by a household post_save signal and on the plot save method on change.
-# 
+#
 #             * If number is greater than actual household instances, households are created.
 #             * If number is less than actual household instances, households are deleted as long as
 #               there are no household members and the household log does not have entries.
@@ -191,22 +195,22 @@ class Helper:
 #         with transaction.atomic():
 #             count = Household.objects.using(using).filter(plot__pk=instance.pk).count()
 #         return count
-# 
+#
 #     @property
 #     def validate_plot_accessible(self):
 #         if self.plot_log_entry and (self.plot_inaccessible is False) and self.plot_log_entry.log_status == ACCESSIBLE:
 #             return True
 #         return False
-# 
+#
 #     def gps(self):
 #         return "S{0} {1} E{2} {3}".format(self.gps_degrees_s, self.gps_minutes_s,
 #                                           self.gps_degrees_e, self.gps_minutes_e)
-# 
+#
 #     def get_contained_households(self):
 #         from bcpp_household.models import Household
 #         households = Household.objects.filter(plot__plot_identifier=self.plot_identifier)
 #         return households
-# 
+#
 #     @property
 #     def log_form_label(self):
 #         # TODO: where is this used?
@@ -230,7 +234,7 @@ class Helper:
 #         if not form_label and self.action != CONFIRMED:
 #             form_label.append(('add new entry', 'add new entry'))
 #         return form_label
-# 
+#
 #     @property
 #     def log_entry_form_urls(self):
 #         # TODO: where is this used?
@@ -249,7 +253,7 @@ class Helper:
 #         except PlotLog.DoesNotExist:
 #             pass
 #         return entry_urls
-# 
+#
 #     def _get_form_url(self, model, model_pk=None, add_url=None):
 #         url = ''
 #         pk = None
@@ -270,24 +274,24 @@ class Helper:
 #         else:
 #             url = reverse('admin:{0}_{1}_add'.format(app_label, model))
 #         return url
-# 
+#
 #     @property
 #     def location(self):
 #         if self.plot_identifier.endswith('0000-00'):
 #             return 'clinic'
 #         else:
 #             return 'household'
-# 
+#
 #     @property
 #     def plot_inaccessible(self):
 #         """Returns True if the plot is inaccessible as defined by its status and number of attempts."""
 #         PlotLogEntry = django_apps.get_model('bcpp_household', 'plotlogentry')
 #         return PlotLogEntry.objects.filter(plot_log__plot__id=self.id, log_status=INACCESSIBLE).count() >= 3
-# 
+#
 #     @property
 #     def target_radius_in_meters(self):
 #         return self.target_radius * 1000
-# 
+#
 #     @property
 #     def plot_log(self):
 #         """Returns an instance of the plot log."""
@@ -297,7 +301,7 @@ class Helper:
 #         except PlotLog.DoesNotExist:
 #             instance = None
 #         return instance
-# 
+#
 #     @property
 #     def plot_log_entry(self):
 #         PlotLogEntry = django_apps.get_model('bcpp_household', 'plotlogentry')
@@ -305,4 +309,3 @@ class Helper:
 #             return PlotLogEntry.objects.filter(plot_log__plot__id=self.id).latest('report_datetime')
 #         except PlotLogEntry.DoesNotExist:
 #             pass
-

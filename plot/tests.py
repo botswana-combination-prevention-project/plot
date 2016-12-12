@@ -13,7 +13,7 @@ class TestPlot(TestCase):
 
     @override_settings(DEVICE_ID='99')
     def test_create_plot_server(self):
-        self.assertRaises(PlotHelperError, Plot.objects.create())
+        self.assertRaises(PlotHelperError, Plot.objects.create)
 
     @override_settings(DEVICE_ID='00')
     def test_create_plot_client(self):
