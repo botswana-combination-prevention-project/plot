@@ -1,4 +1,4 @@
-from bcpp_plot.constants import (
+from .constants import (
     NON_RESIDENTIAL, RESIDENTIAL_NOT_HABITABLE, RESIDENTIAL_HABITABLE, INACCESSIBLE,
     TWENTY_PERCENT, FIVE_PERCENT)
 
