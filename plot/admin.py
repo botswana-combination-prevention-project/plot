@@ -19,10 +19,8 @@ class PlotAdmin(ModelAdminMixin):
 
     fields = (
         'status',
-        'gps_degrees_s',
-        'gps_minutes_s',
-        'gps_degrees_e',
-        'gps_minutes_e',
+        'gps_confirm_longitude',
+        'gps_confirm_latitude',
         'cso_number',
         'household_count',
         'eligible_members',
@@ -33,7 +31,7 @@ class PlotAdmin(ModelAdminMixin):
     list_display = ('plot_identifier', 'community', 'action', 'status', 'access_attempts', 'bhs', 'htc',
                     'created', 'modified')
 
-    list_filter = ('bhs', 'htc', 'status', 'created', 'modified', 'community', 'access_attempts'
+    list_filter = ('bhs', 'htc', 'status', 'created', 'modified', 'community', 'access_attempts',
                    'hostname_modified',
                    'section', 'sub_section', 'selected', 'action', 'time_of_week', 'time_of_day')
 

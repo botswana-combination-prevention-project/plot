@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from edc_base.utils import get_utcnow
 from edc_constants.constants import CLOSED, OPEN
+from edc_device.constants import SERVER
 
 
 class Enrollment:
@@ -20,9 +21,22 @@ class Enrollment:
         return status
 
 
+class Permisions:
+    def __init__(self, create_roles=None, create_devices=None):
+        self.create_roles = create_roles
+        self.create_devices = create_devices
+
+    def add(self, value=None):
+        add = False
+        if value in self.create_roles + self.create_devices:
+            add = True
+        return add
+
+
 class AppConfig(DjangoAppConfig):
     name = 'plot'
     enrollment = Enrollment(
         timezone.now() - relativedelta(years=1),
         timezone.now() + relativedelta(years=1))
     max_households = 9
+    permissions = Permisions(create_roles=[SERVER])

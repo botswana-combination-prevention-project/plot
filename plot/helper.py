@@ -33,15 +33,15 @@ class Helper:
                 setattr(self, attr, getattr(plot, field.name))
 
     def get_identifier(self):
+        """Returns the plot identifier and creates one if one does not yet exist."""
         identifier = self.plot_identifier
         if not identifier:
-            if edc_device_app_config.role == CLIENT:
+            if app_config.permissions.add(edc_device_app_config.role):
                 identifier = PlotIdentifier(
-                    study_site=site_mappers.get_mapper(site_mappers.current_map_area).map_code,
-                ).identifier
+                    study_site=site_mappers.get_mapper(site_mappers.current_map_area).map_code).identifier
             else:
                 raise PlotHelperError(
-                    'Blocking attempt to create identifier on non-client device. Got device is \'{}\''.format(
+                    'Blocking attempt to create plot identifier. Got device \'{}\'.'.format(
                         edc_device_app_config.role))
         return identifier
 

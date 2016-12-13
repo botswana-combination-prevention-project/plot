@@ -9,13 +9,10 @@ from edc_map.model_mixins import MapperModelMixin
 
 from edc_base.model.validators.date import datetime_not_future
 
+from bcpp.manager_mixins import BcppSubsetManagerMixin
 from survey.validators import date_in_survey
 
-from .choices import PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
-
-from bcpp.manager_mixins import BcppSubsetManagerMixin
-
-from .choices import PLOT_STATUS, SELECTED
+from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .helper import Helper
 from .validators import is_valid_community
 

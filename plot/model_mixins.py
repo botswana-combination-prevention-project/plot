@@ -60,7 +60,7 @@ class GpsModelMixin(models.Model):
     def save(self, *args, **kwargs):
         # if user added/updated gps_degrees_[es] and gps_minutes_[es], update gps_lat, gps_lon
         if (self.gps_degrees_e and self.gps_degrees_s and self.gps_minutes_e and self.gps_minutes_s):
-            mapper = site_mappers.get_mapper(site_mappers.current_community)
+            mapper = site_mappers.get_mapper(site_mappers.current_map_area)
             self.gps_lat = mapper.get_gps_lat(self.gps_degrees_s, self.gps_minutes_s)
             self.gps_lon = mapper.get_gps_lon(self.gps_degrees_e, self.gps_minutes_e)
             mapper.verify_gps_location(self.gps_lat, self.gps_lon, MapperError)
