@@ -1,57 +1,40 @@
+# coding=utf-8
+
 from django.db import models
-from django.core.validators import MaxValueValidator
 from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
 
 from edc_base.model.models import BaseUuidModel, HistoricalRecords
+from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
 from edc_map.site_mappers import site_mappers
 from edc_map.model_mixins import MapperModelMixin
-
+from edc_device.model_mixins import DeviceModelMixin
 from edc_base.model.validators.date import datetime_not_future
 
-from bcpp.manager_mixins import BcppSubsetManagerMixin
 from survey.validators import date_in_survey
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
-from .helper import Helper
-from .validators import is_valid_community
+from .model_mixins import (
+    PlotIdentifierModelMixin, EnrollmentModelMixin, CreateHouseholdsModelMixin)
+from django.db.models.deletion import PROTECT
 
 
-class PlotManager(BcppSubsetManagerMixin, models.Manager):
-
-    reference_model = 'plot.plot'
-    to_reference_model = ['household_structure', 'household', 'plot']
-
-    def get_by_natural_key(self, plot_identifier):
-        return self.get(plot_identifier=plot_identifier)
-
-
-class PlotLogManager(BcppSubsetManagerMixin, models.Manager):
-
-    lookup = ['plot']
-
-    def get_by_natural_key(self, plot_identifier):
-        return self.get(plot__plot_identifier=plot_identifier)
-
-
-class PlotLogEntryManager(BcppSubsetManagerMixin, models.Manager):
-
-    lookup = ['plot_log', 'plot']
-
-    def get_by_natural_key(self, report_datetime, plot_identifier):
-        return self.get(report_datetime=report_datetime, plot__plot_identifier=plot_identifier)
-
-
-class Plot(MapperModelMixin, BaseUuidModel):
+class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, EnrollmentModelMixin,
+           CreateHouseholdsModelMixin, BaseUuidModel):
     """A model completed by the user (and initially by the system) to represent a Plot
     in the community."""
 
-    plot_identifier = models.CharField(
-        verbose_name='Plot Identifier',
-        max_length=25,
-        unique=True,
-        help_text="Plot identifier",
+    report_datetime = models.DateTimeField(
+        validators=[datetime_not_future],
+        default=get_utcnow,
         editable=False)
+
+    enrolled_datetime = models.DateTimeField(
+        null=True,
+        validators=[datetime_not_future],
+        editable=False,
+        help_text=('datetime that plot is enrolled into BHS. '
+                   'Updated by bcpp_subject.subject_consent post_save'))
 
     eligible_members = models.IntegerField(
         verbose_name="Approximate number of age eligible members",
@@ -59,29 +42,11 @@ class Plot(MapperModelMixin, BaseUuidModel):
         help_text=(("Provide an approximation of the number of people "
                     "who live in this residence who are age eligible.")))
 
-    description = EncryptedTextField(
-        verbose_name="Description of plot/residence",
-        max_length=250,
-        blank=True,
-        null=True)
-
-    comment = EncryptedTextField(
-        verbose_name="Comment",
-        max_length=250,
-        blank=True,
-        null=True)
-
     cso_number = EncryptedCharField(
         verbose_name="CSO Number",
         blank=True,
         null=True,
         help_text=("provide the CSO number or leave BLANK."))
-
-    household_count = models.IntegerField(
-        verbose_name="Number of Households on this plot.",
-        default=0,
-        validators=[MaxValueValidator(9)],
-        help_text=("Provide the number of households in this plot."))
 
     time_of_week = models.CharField(
         verbose_name='Time of week when most of the eligible members will be available',
@@ -102,15 +67,17 @@ class Plot(MapperModelMixin, BaseUuidModel):
         max_length=35,
         choices=PLOT_STATUS)
 
-    target_radius = models.FloatField(
-        default=.025,
-        help_text='km',
-        editable=False)
+    description = EncryptedTextField(
+        verbose_name="Description of plot/residence",
+        max_length=250,
+        blank=True,
+        null=True)
 
-    distance_from_target = models.FloatField(
-        null=True,
-        editable=True,
-        help_text='distance in meters')
+    comment = EncryptedTextField(
+        verbose_name="Comment",
+        max_length=250,
+        blank=True,
+        null=True)
 
     # 20 percent plots is reperesented by 1 and 5 percent of by 2, the rest of
     # the plots which is 75 percent selected value is None
@@ -121,15 +88,8 @@ class Plot(MapperModelMixin, BaseUuidModel):
         choices=SELECTED,
         editable=False)
 
-    device_id = models.CharField(
-        max_length=2,
-        null=True,
-        editable=False)
-
-    confirmed = models.CharField(
-        max_length=25,
-        null=True,
-        default=False,
+    accessible = models.BooleanField(
+        default=True,
         editable=False)
 
     access_attempts = models.IntegerField(
@@ -137,40 +97,15 @@ class Plot(MapperModelMixin, BaseUuidModel):
         help_text='Number of attempts to access a plot to determine it\'s status.',
         editable=False)
 
-    community = models.CharField(
-        max_length=25,
-        help_text='If the community is incorrect, please contact the DMC immediately.',
-        validators=[is_valid_community, ],
-        editable=False)
-
-    section = models.CharField(
-        max_length=25,
-        null=True,
-        verbose_name='Section',
-        editable=False)
-
-    sub_section = models.CharField(
-        max_length=25,
-        null=True,
-        verbose_name='Sub-section',
-        help_text=u'',
-        editable=False)
-
-    bhs = models.NullBooleanField(
-        default=None,
+    bhs = models.BooleanField(
+        default=False,
         editable=False,
         help_text=('True indicates that plot is enrolled into BHS. '
                    'Updated by bcpp_subject.subject_consent post_save'))
 
-    htc = models.NullBooleanField(
+    htc = models.BooleanField(
         default=False,
         editable=False)
-
-    enrolled_datetime = models.DateTimeField(
-        null=True,
-        editable=False,
-        help_text=('datetime that plot is enrolled into BHS. '
-                   'Updated by bcpp_subject.subject_consent post_save'))
 
     # objects = PlotManager()
 
@@ -186,30 +121,27 @@ class Plot(MapperModelMixin, BaseUuidModel):
         return (self.plot_identifier, )
 
     def save(self, *args, **kwargs):
-        helper = Helper(self)
-        helper.validate()
-        if not self.plot_identifier:
-            self.plot_identifier = helper.get_identifier()
-        if self.gps_confirm_longitude and self.gps_confirm_latitude:
-            self.confirmed = True
-        else:
-            self.confirmed = False
-        super(Plot, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @property
     def identifier_segment(self):
         return self.plot_identifier[:-3]
 
+    @property
+    def community(self):
+        return self.map_area
+
     class Meta:
         app_label = 'plot'
         ordering = ['-plot_identifier', ]
         unique_together = (('gps_target_lat', 'gps_target_lon'),)
+        household_model = 'household.household'
 
 
 class PlotLog(BaseUuidModel):
     """A system model to track an RA\'s attempts to confirm a Plot (related)."""
 
-    plot = models.OneToOneField(Plot)
+    plot = models.OneToOneField(Plot, on_delete=PROTECT)
 
     history = HistoricalRecords()
 
@@ -228,11 +160,13 @@ class PlotLog(BaseUuidModel):
 
 class PlotLogEntry(BaseUuidModel):
     """A model completed by the user to track an RA\'s attempts to confirm a Plot."""
-    plot_log = models.ForeignKey(PlotLog)
+
+    plot_log = models.ForeignKey(PlotLog, on_delete=PROTECT)
 
     report_datetime = models.DateTimeField(
         verbose_name="Report date",
-        validators=[datetime_not_future, date_in_survey])
+        validators=[datetime_not_future, date_in_survey],
+        default=get_utcnow)
 
     log_status = models.CharField(
         verbose_name='What is the status of this plot?',
@@ -274,3 +208,4 @@ class PlotLogEntry(BaseUuidModel):
     class Meta:
         app_label = 'plot'
         unique_together = ('plot_log', 'report_datetime')
+        ordering = ('report_datetime', )

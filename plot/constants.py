@@ -1,3 +1,5 @@
+# coding=utf-8
+
 ACCESSIBLE = 'accessible'
 CONFIRMED = 'confirmed'
 FIVE_PERCENT = '2'  # plot.selected=2

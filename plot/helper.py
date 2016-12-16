@@ -1,6 +1,9 @@
+# coding=utf-8
+
 import pytz
 
 from django.apps import apps as django_apps
+from django.db import transaction, models
 
 from edc_constants.constants import CLOSED
 from edc_map.site_mappers import site_mappers
@@ -8,17 +11,10 @@ from edc_device.constants import CLIENT
 from edc_base.utils import get_utcnow
 
 from .plot_identifier import PlotIdentifier
+from .choices import PLOT_STATUS
 
 app_config = django_apps.get_app_config('plot')
 edc_device_app_config = django_apps.get_app_config('edc_device')
-
-
-class PlotHelperError(Exception):
-    pass
-
-
-class MaxHouseholdsExceededError(Exception):
-    pass
 
 
 class Helper:
@@ -32,55 +28,24 @@ class Helper:
                 attr = 'plot_id' if attr == 'id' else attr
                 setattr(self, attr, getattr(plot, field.name))
 
-    def get_identifier(self):
-        """Returns the plot identifier and creates one if one does not yet exist."""
-        identifier = self.plot_identifier
-        if not identifier:
-            if app_config.permissions.add(edc_device_app_config.role):
-                identifier = PlotIdentifier(
-                    study_site=site_mappers.get_mapper(site_mappers.current_map_area).map_code).identifier
-            else:
-                raise PlotHelperError(
-                    'Blocking attempt to create plot identifier. Got device \'{}\'.'.format(
-                        edc_device_app_config.role))
-        return identifier
-
     def validate(self):
         if edc_device_app_config.role == CLIENT:
             # do not allow access to HTC plots
-            if not self.plot_id and edc_device_app_config.role == CLIENT and self.htc:
-                raise PlotHelperError(
-                    'Blocking attempt to modify plot assigned to the HTC campaign. Got {}.'.format(
-                        self.plot_identifier))
             self.map_area_or_raise()
-            self.enroll_or_raise()
-            if self.household_count > app_config.max_households:
-                raise MaxHouseholdsExceededError(
-                    'Number of households per plot cannot exceed {}. '
-                    'Perhaps catch this in the forms.py. See '
-                    'plot.AppConfig'.format(app_config.max_households))
+            self.allow_enrollment_or_raise()
 
-    def enroll_or_raise(self):
+    def allow_enrollment_or_raise(self):
         """Raises an exception if enrollment is closed."""
         if not self.plot_id and edc_device_app_config.role == CLIENT:
             if app_config.enrollment.status == CLOSED:
                 mapper_instance = site_mappers.get_mapper(site_mappers.current_map_area)
                 if get_utcnow() > pytz.utc.localize(mapper_instance.current_survey_dates.full_enrollment_date):
-                    raise PlotHelperError(
+                    raise PlotEnrollmentError(
                         'Enrollment for {0} ended on {1}. This plot, and the '
                         'data related to it, may not be modified. '
                         'See site_mappers'.format(
                             self.community,
                             mapper_instance.current_survey_dates.full_enrollment_date.strftime('%Y-%m-%d')))
-
-    def map_area_or_raise(self):
-        """Returns True if the plot.community = the current mapper.map_area."""
-        if edc_device_app_config.role == CLIENT:
-            if self.community:
-                if self.community != site_mappers.get_mapper(site_mappers.current_map_area).map_area:
-                    raise PlotHelperError(
-                        'Invalid community, expected \'{}\'. Got \'{}\'. '.format(
-                            site_mappers.get_mapper(site_mappers.current_map_area).map_area, self.community))
 
 #     def household_valid_to_delete(self, instance, using=None):
 #         """ Checks whether there is a plot log entry for each log. If it does not exists the
@@ -171,30 +136,6 @@ class Helper:
 #         instance = instance or self
 #         using = using or 'default'
 #         return self.delete_confirmed_household(instance, existing_no)
-#
-#     def create_or_delete_households(self, instance=None, using=None):
-#         """Creates or deletes households to try to equal the number of households reported on the plot instance.
-#
-#         This gets called by a household post_save signal and on the plot save method on change.
-#
-#             * If number is greater than actual household instances, households are created.
-#             * If number is less than actual household instances, households are deleted as long as
-#               there are no household members and the household log does not have entries.
-#             * bcpp_clinic is a special case to allow for a plot to represent the BCPP Clinic."""
-#         instance = instance or self
-#         using = using or 'default'
-#         Household = django_apps.get_model('bcpp_household', 'Household')
-#         # check that tuple has not changed and has "residential_habitable"
-#         if instance.status:
-#             if instance.status not in [item[0] for item in list(PLOT_STATUS) + [('bcpp_clinic', 'BCPP Clinic')]]:
-#                 raise AttributeError('{0} not found in choices tuple PLOT_STATUS. {1}'.format(instance.status,
-#                                                                                               PLOT_STATUS))
-#         existing_household_count = Household.objects.using(using).filter(plot__pk=instance.pk).count()
-#         instance.create_household(instance.household_count - existing_household_count, using=using)
-#         instance.safe_delete_households(existing_household_count, using=using)
-#         with transaction.atomic():
-#             count = Household.objects.using(using).filter(plot__pk=instance.pk).count()
-#         return count
 #
 #     @property
 #     def validate_plot_accessible(self):

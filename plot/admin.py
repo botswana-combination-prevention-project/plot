@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -31,7 +33,7 @@ class PlotAdmin(ModelAdminMixin):
     list_display = ('plot_identifier', 'community', 'action', 'status', 'access_attempts', 'bhs', 'htc',
                     'created', 'modified')
 
-    list_filter = ('bhs', 'htc', 'status', 'created', 'modified', 'community', 'access_attempts',
+    list_filter = ('bhs', 'htc', 'status', 'created', 'modified', 'map_area', 'access_attempts',
                    'hostname_modified',
                    'section', 'sub_section', 'selected', 'action', 'time_of_week', 'time_of_day')
 
@@ -52,8 +54,8 @@ class PlotLogEntryAdmin(ModelAdminMixin):
     fields = ('plot_log', 'report_datetime', 'log_status', 'reason', 'reason_other', 'comment')
     list_per_page = 15
     list_display = ('plot_log', 'log_status', 'report_datetime')
-    list_filter = ('log_status', 'report_datetime', 'plot_log__plot__community', 'log_status')
-    search_fields = ('log_status', 'plot_log__plot__community', 'plot_log__plot__plot_identifier')
+    list_filter = ('log_status', 'report_datetime', 'plot_log__plot__map_area', 'log_status')
+    search_fields = ('log_status', 'plot_log__plot__map_area', 'plot_log__plot__plot_identifier')
     radio_fields = {
         'reason': admin.VERTICAL,
         'log_status': admin.VERTICAL
