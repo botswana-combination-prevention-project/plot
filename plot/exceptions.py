@@ -13,5 +13,9 @@ class PlotIdentifierError(Exception):
     pass
 
 
-class PlotAssignmentError(Exception):
+class CreateHouseholdError(Exception):
+    pass
+
+
+class PlotConfirmationError(Exception):
     pass

@@ -7,7 +7,6 @@ from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
 from edc_base.model.models import BaseUuidModel, HistoricalRecords
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
-from edc_map.site_mappers import site_mappers
 from edc_map.model_mixins import MapperModelMixin
 from edc_map.exceptions import MapperError
 from edc_device.model_mixins import DeviceModelMixin
@@ -17,21 +16,24 @@ from survey.validators import date_in_survey
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .exceptions import PlotEnrollmentError
-from .model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotAssignmentMixin
+from .model_mixins import (
+    PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotEnrollmentMixin, PlotConfirmationMixin)
+from plot.constants import INACCESSIBLE
+from django.core.exceptions import MultipleObjectsReturned
 
 
-class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotAssignmentMixin,
-           CreateHouseholdsModelMixin, BaseUuidModel):
+class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnrollmentMixin,
+           PlotConfirmationMixin, CreateHouseholdsModelMixin, BaseUuidModel):
     """A model created by the system and updated by the user to represent a Plot
     in the community."""
 
     report_datetime = models.DateTimeField(
         validators=[datetime_not_future],
-        default=get_utcnow,
-        editable=False)
+        default=get_utcnow)
 
     eligible_members = models.IntegerField(
         verbose_name="Approximate number of age eligible members",
+        default=0,
         null=True,
         help_text=(("Provide an approximation of the number of people "
                     "who live in this residence who are age eligible.")))
@@ -73,14 +75,14 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotAss
         blank=True,
         null=True)
 
-    # 20 percent plots is reperesented by 1 and 5 percent of by 2, the rest of
-    # the plots which is 75 percent selected value is None
     selected = models.CharField(
         max_length=25,
         null=True,
         verbose_name='selected',
         choices=SELECTED,
-        editable=False)
+        editable=False,
+        help_text=(
+            "1=20% of selected plots, 2=additional 5% selected buffer/pool, None=75%"))
 
     accessible = models.BooleanField(
         default=True,
@@ -96,22 +98,36 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotAss
     history = HistoricalRecords()
 
     def __str__(self):
-        if site_mappers.get_mapper(site_mappers.current_map_area).clinic_plot_identifier == self.plot_identifier:
-            return 'BCPP-CLINIC'
+        return '{} {}'.format(self.location_name or 'undetermined', self.plot_identifier)
+
+    def save(self, *args, **kwargs):
+        if self.id and not self.location_name:
+            self.location_name = 'plot'
+        if self.status == INACCESSIBLE:
+            self.accessible = False
+        elif self.htc:
+            self.accessible = False
         else:
-            return self.plot_identifier
+            if self.id:
+                try:
+                    PlotLogEntry.objects.get(plot_log__plot__pk=self.id)
+                except PlotLogEntry.DoesNotExist:
+                    self.accessible = True
+                except MultipleObjectsReturned:
+                    pass
+        super().save(*args, **kwargs)
 
     def natural_key(self):
         return (self.plot_identifier, )
 
-    def save(self, *args, **kwargs):
+    def common_clean(self):
         if self.id:
             try:
                 self.get_confirmed()
             except MapperError:
                 if self.enrolled:
-                    raise PlotEnrollmentError('Plot is enrolled and may not be uncomfirmed')
-        super().save(*args, **kwargs)
+                    raise PlotEnrollmentError('Plot is enrolled and may not be unconfirmed')
+        super().common_clean()
 
     @property
     def identifier_segment(self):

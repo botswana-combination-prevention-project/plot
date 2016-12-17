@@ -10,12 +10,14 @@ from edc_map.validators import is_valid_map_area
 
 from household.models import Household
 
-from .constants import RESIDENTIAL_HABITABLE, INACCESSIBLE
-from .exceptions import PlotIdentifierError, MaxHouseholdsExceededError, PlotAssignmentError, PlotEnrollmentError
-from .models import Plot
+from .constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE
+from .exceptions import (
+    PlotIdentifierError, MaxHouseholdsExceededError, PlotEnrollmentError,
+    CreateHouseholdError, PlotConfirmationError)
+from .models import Plot, PlotLog
 from .mommy_recipes import fake, get_utcnow
-
 from .test_mixins import PlotMixin
+from plot.models import PlotLogEntry
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
@@ -41,24 +43,6 @@ class TestPlotCreatePermissions(PlotMixin, TestCase):
         edc_device_app_config = django_apps.get_app_config('edc_device')
         self.assertEqual(edc_device_app_config.role, CLIENT)
         self.assertRaises(PlotIdentifierError, self.make_plot)
-
-    @override_settings(DEVICE_ID='99')
-    def test_create_plot_htc(self):
-        """Assert cannot confirm an HTC assigned plot."""
-        django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
-        plot = self.make_plot(htc=True)
-        django_apps.app_configs['edc_device'].device_id = '00'
-        edc_device_app_config = django_apps.get_app_config('edc_device')
-        self.assertEqual(edc_device_app_config.role, CLIENT)
-        plot.gps_confirmed_latitude = fake.confirmed_latitude()
-        plot.gps_confirmed_longitude = fake.confirmed_longitude()
-        self.assertRaises(PlotAssignmentError, plot.save)
-
-    @override_settings(DEVICE_ID='99')
-    def test_create_plot_enrolled_without_date(self):
-        """Assert cannot update enrolled without enrollment date."""
-        django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
-        self.assertRaises(PlotEnrollmentError, self.make_plot, enrolled=True)
 
     @override_settings(DEVICE_ID='99')
     def test_create_plot_enrolled_cannot_unconfirm(self):
@@ -95,16 +79,16 @@ class TestPlot(PlotMixin, TestCase):
 
     def test_plot_creates_household(self):
         """Assert creating a plot with a household count creates that many households"""
-        plot = self.make_plot(household_count=1)
+        plot = self.make_confirmed_plot(household_count=1)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 1)
-        plot = self.make_plot(household_count=2)
+        plot = self.make_confirmed_plot(household_count=2)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 2)
-        plot = self.make_plot(household_count=3)
+        plot = self.make_confirmed_plot(household_count=3)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 3)
 
     def test_plot_add_subtract_household(self):
         """Assert change number of households will delete and recreate."""
-        plot = self.make_plot(household_count=3)
+        plot = self.make_confirmed_plot(household_count=3)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 3)
         plot.household_count = 2
         plot.save()
@@ -119,7 +103,7 @@ class TestPlot(PlotMixin, TestCase):
 
     def test_plot_add_too_many_households(self):
         """Assert cannot exceed max plots."""
-        self.assertRaises(MaxHouseholdsExceededError, self.make_plot, household_count=10)
+        self.assertRaises(MaxHouseholdsExceededError, self.make_confirmed_plot, household_count=10)
 
     def test_plot_confirms_plot_by_good_gps(self):
         """Asserts a target can be confirmed."""
@@ -156,3 +140,104 @@ class TestPlot(PlotMixin, TestCase):
         self.assertIsNone(plot.gps_confirmed_latitude)
         self.assertIsNone(plot.gps_confirmed_longitude)
         self.assertFalse(plot.confirmed)
+
+    def test_access_attempts(self):
+        plot = self.make_confirmed_plot()
+        self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
+        plot = Plot.objects.get(pk=plot.pk)
+        self.assertEqual(plot.access_attempts, 1)
+        self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
+        plot = Plot.objects.get(pk=plot.pk)
+        self.assertEqual(plot.access_attempts, 2)
+
+    def test_accessible_can_create_households(self):
+        plot = self.make_plot()
+        self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
+        plot = self.confirm_plot(plot)
+        plot.household_count = 3
+        plot.save()
+        self.assertEqual(Household.objects.filter(plot=plot).count(), 3)
+
+    def test_inaccessible_cannot_have_eligibles(self):
+        plot = self.make_plot()
+        self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
+        plot = Plot.objects.get(pk=plot.pk)
+        plot.eligible_members = 5
+        self.assertRaises(CreateHouseholdError, plot.save)
+
+    def test_inaccessible_plot_cannot_be_confirmed(self):
+        plot = self.make_plot()
+        self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
+        plot = Plot.objects.get(pk=plot.pk)
+        self.assertRaises(
+            PlotConfirmationError, self.confirm_plot, plot)
+
+    def test_does_not_create_log_for_htc(self):
+        plot = self.make_plot(htc=True)
+        try:
+            self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
+            self.fail('PlotLog.DoesNotExist not raised')
+        except PlotLog.DoesNotExist:
+            pass
+
+    def test_cannot_confirm_without_log(self):
+        plot = self.make_plot()
+        self.confirm_plot(plot)
+
+    def test_cannot_create_plot_enrolled_without_date(self):
+        """Assert cannot update enrolled without enrollment date."""
+        plot = self.make_confirmed_plot()
+        plot.enrolled = True
+        self.assertRaises(PlotEnrollmentError, plot.save)
+
+    def test_accessible_and_confirmed_can_be_inaccessible(self):
+        plot = self.make_plot()
+        self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
+        plot = self.confirm_plot(plot)
+        plot.household_count = 3
+        plot.save()
+        try:
+            self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
+        except (CreateHouseholdError, PlotConfirmationError) as e:
+            self.fail('Exception unexpectedly raised. Got {}'.format(str(e)))
+
+    def test_accessible_and_confirmed_can_be_inaccessible_if_enrolled(self):
+        plot = self.make_plot()
+        self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
+        plot = self.confirm_plot(plot)
+        plot.household_count = 3
+        plot.save()
+        plot = Plot.objects.get(pk=plot.pk)
+        plot.enrolled = True
+        plot.enrolled_datetime = get_utcnow()
+        plot.save()
+        plot = Plot.objects.get(pk=plot.pk)
+        self.assertRaises(PlotEnrollmentError, self.make_plot_log_entry, plot=plot, log_status=INACCESSIBLE)
+
+    def test_log_entry_sets_accessible_attr(self):
+        plot = self.make_confirmed_plot()
+        plot_log_entry = self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
+        plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
+        self.assertFalse(plot.accessible)
+        plot_log_entry = self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
+        plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
+        self.assertTrue(plot.accessible)
+
+    def test_plot_resets_accessible_attr_if_no_logentry(self):
+        plot = self.make_confirmed_plot()
+        plot_log_entry = PlotLogEntry.objects.get(plot_log__plot=plot)
+        plot_log_entry.log_status = INACCESSIBLE
+        plot_log_entry.save()
+        plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
+        self.assertFalse(plot.accessible)
+        plot_log_entry.delete()
+        plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
+        self.assertTrue(plot.accessible)
+
+    def test_plot_resets_accessible_attr_if_no_logentry_and_not_htc(self):
+        plot = self.make_plot(htc=True)
+        self.assertFalse(plot.accessible)
+        plot.htc = False
+        plot.save()
+        plot = Plot.objects.get(pk=plot.pk)
+        self.assertTrue(plot.accessible)

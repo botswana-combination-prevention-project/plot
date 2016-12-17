@@ -3,58 +3,87 @@
 from datetime import datetime
 
 from django import forms
+from django.apps import apps as django_apps
 from django.forms.utils import ErrorList
 
 from edc_map.site_mappers import site_mappers
 
 from .constants import INACCESSIBLE, CONFIRMED, ACCESSIBLE
+from .exceptions import (
+    PlotIdentifierError, PlotConfirmationError, MaxHouseholdsExceededError, PlotEnrollmentError,
+    CreateHouseholdError)
+
 from .models import Plot, PlotLog, PlotLogEntry
+from edc_map.exceptions import MapperError
+from django.core.exceptions import MultipleObjectsReturned
 
 
 class PlotForm(forms.ModelForm):
 
+    plot_identifier = forms.CharField(
+        label='Plot identifier',
+        required=True,
+        help_text='This field is read only.',
+        widget=forms.TextInput(attrs={'size': 15, 'readonly': True}))
+
+    accessible = forms.BooleanField(
+        label='Accessible',
+        required=False,
+        help_text='This field is read only.',
+        widget=forms.CheckboxInput(attrs={'disabled': True}))
+
     def clean(self):
-        cleaned_data = self.cleaned_data
-
-        if self.instance.plot_identifier == site_mappers.get_mapper(
-                site_mappers.current_map_area).clinic_plot_identifier:
-            raise forms.ValidationError('Plot is a special plot that represents the BCPP Clinic. '
-                                        'It may not be edited by a user.')
+        cleaned_data = super().clean()
+        app_config = django_apps.get_app_config('plot')
+        if self.instance.id:
+            if cleaned_data.get('location_name') in app_config.special_locations:
+                raise forms.ValidationError(
+                    'Plot may not be changed by a user. Plot location name == \'{}\''.format(
+                        cleaned_data.get('location_name')))
+            try:
+                PlotLogEntry.objects.exclude(log_status=INACCESSIBLE).get(plot_log__plot__pk=self.instance.id)
+            except PlotLogEntry.DoesNotExist:
+                raise forms.ValidationError('Plot log entry is required before attempting to modify a plot.')
+            except MultipleObjectsReturned:
+                pass
         try:
-            self.instance.allow_enrollment('default',
-                                           plot_instance=Plot(**cleaned_data),
-                                           exception_cls=forms.ValidationError)
-        except AttributeError:
-            raise forms.ValidationError('System settings do not allow for this form to be '
-                                        'edited. (e.g. mapper, community, site_code, device)')
-        if self.instance.replaced_by:
-            raise forms.ValidationError('Plot has been replaced and is not longer a BHS plot. '
-                                        '(replaced_by={}'.format(self.instance.replaced_by))
-        if self.instance.htc:
-            raise forms.ValidationError('Plot is not a BHS plot (htc=True).')
-        if not self.instance.community:
-            raise forms.ValidationError('Community may not be blank. Must be '
-                                        'one of {1}.'.format(self.instance.community,
-                                                             ', '.join(site_mappers.map_areas)))
-        if self.instance.community not in site_mappers.map_areas:
-            raise forms.ValidationError('Unknown community {0}. Must be one '
-                                        'of {1}.'.format(self.instance.community,
-                                                         ', '.join(site_mappers.map_areas)))
-        if not self.instance.validate_plot_accessible:
-            raise forms.ValidationError('You cannot confirm a plot, plot log entry is set to inacccessible.')
-
-        if not (cleaned_data.get('household_count') and cleaned_data.get('status') in ['residential_habitable']):
-            raise forms.ValidationError(
-                'Invalid number of households. Only plots that are residential habitable can have households.')
-
-        self.household_count_and_status(cleaned_data)
-        self.status_and_eligible_member(cleaned_data)
-        self.gps_coordinates_filled(cleaned_data)
-        self.gps_verification(cleaned_data)
-        self.complete_plot_log_entry(cleaned_data)
-        self.best_time_to_visit(cleaned_data)
-
+            instance = self._meta.model(id=self.instance.id, **cleaned_data)
+            instance.common_clean()
+        except (MaxHouseholdsExceededError, PlotIdentifierError, PlotConfirmationError, PlotEnrollmentError,
+                MapperError, CreateHouseholdError) as e:
+            raise forms.ValidationError(str(e))
         return cleaned_data
+
+    class Meta:
+        model = Plot
+        fields = '__all__'
+
+#         try:
+#             self.instance.allow_enrollment('default',
+#                                            plot_instance=Plot(**cleaned_data),
+#                                            exception_cls=forms.ValidationError)
+#         except AttributeError:
+#             raise forms.ValidationError('System settings do not allow for this form to be '
+#                                         'edited. (e.g. mapper, community, site_code, device)')
+#         if self.instance.htc:
+#             raise forms.ValidationError('Plot is not a BHS plot (htc=True).')
+#         if not self.instance.community:
+#             raise forms.ValidationError('Community may not be blank. Must be '
+#                                         'one of {1}.'.format(self.instance.community,
+#                                                              ', '.join(site_mappers.map_areas)))
+#         if not self.instance.validate_plot_accessible:
+#             raise forms.ValidationError('You cannot confirm a plot, plot log entry is set to inacccessible.')
+
+#         if not (cleaned_data.get('household_count') and cleaned_data.get('status') in ['residential_habitable']):
+#             raise forms.ValidationError(
+#                 'Invalid number of households. Only plots that are residential habitable can have households.')
+
+#         self.household_count_and_status(cleaned_data)
+#         self.status_and_eligible_member(cleaned_data)
+#         self.gps_coordinates_filled(cleaned_data)
+#         self.gps_verification(cleaned_data)
+#         self.complete_plot_log_entry(cleaned_data)
+#         self.best_time_to_visit(cleaned_data)
 
     def household_count_and_status(self, cleaned_data):
         """Check if a residential_habitable plot has a household count greater than zero."""
@@ -128,10 +157,6 @@ class PlotForm(forms.ModelForm):
                 not cleaned_data.get('time_of_week') or not cleaned_data.get('time_of_day')):
             raise forms.ValidationError('If the residence is residential_habitable, provide '
                                         'the best time to visit (e.g time of week, time of day).')
-
-    class Meta:
-        model = Plot
-        fields = '__all__'
 
 
 class PlotLogForm(forms.ModelForm):

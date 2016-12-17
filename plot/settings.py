@@ -176,3 +176,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'plot', 'media')
 CURRENT_MAP_AREA = 'test_community'
+DEVICE_ID = '99'
