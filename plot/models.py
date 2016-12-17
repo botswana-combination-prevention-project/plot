@@ -9,16 +9,18 @@ from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
 from edc_map.site_mappers import site_mappers
 from edc_map.model_mixins import MapperModelMixin
+from edc_map.exceptions import MapperError
 from edc_device.model_mixins import DeviceModelMixin
 from edc_base.model.validators.date import datetime_not_future
 
 from survey.validators import date_in_survey
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
-from .model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin
+from .exceptions import PlotEnrollmentError
+from .model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotAssignmentMixin
 
 
-class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
+class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotAssignmentMixin,
            CreateHouseholdsModelMixin, BaseUuidModel):
     """A model created by the system and updated by the user to represent a Plot
     in the community."""
@@ -27,13 +29,6 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         validators=[datetime_not_future],
         default=get_utcnow,
         editable=False)
-
-    enrolled_datetime = models.DateTimeField(
-        null=True,
-        validators=[datetime_not_future],
-        editable=False,
-        help_text=('datetime that plot is enrolled into BHS. '
-                   'Updated by bcpp_subject.subject_consent post_save'))
 
     eligible_members = models.IntegerField(
         verbose_name="Approximate number of age eligible members",
@@ -96,16 +91,6 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         help_text='Number of attempts to access a plot to determine it\'s status.',
         editable=False)
 
-    bhs = models.BooleanField(
-        default=False,
-        editable=False,
-        help_text=('True indicates that plot is enrolled into BHS. '
-                   'Updated by bcpp_subject.subject_consent post_save'))
-
-    htc = models.BooleanField(
-        default=False,
-        editable=False)
-
     # objects = PlotManager()
 
     history = HistoricalRecords()
@@ -120,6 +105,12 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         return (self.plot_identifier, )
 
     def save(self, *args, **kwargs):
+        if self.id:
+            try:
+                self.get_confirmed()
+            except MapperError:
+                if self.enrolled:
+                    raise PlotEnrollmentError('Plot is enrolled and may not be uncomfirmed')
         super().save(*args, **kwargs)
 
     @property

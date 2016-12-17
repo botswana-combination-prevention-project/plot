@@ -1,6 +1,6 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from django.test import TestCase, tag
+from django.test import TestCase
 from django.test.utils import override_settings
 from model_mommy import mommy
 
@@ -10,10 +10,10 @@ from edc_map.validators import is_valid_map_area
 
 from household.models import Household
 
-from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE
-from ..exceptions import PlotIdentifierError, MaxHouseholdsExceededError
-from ..models import Plot
-from ..mommy_recipes import fake
+from .constants import RESIDENTIAL_HABITABLE, INACCESSIBLE
+from .exceptions import PlotIdentifierError, MaxHouseholdsExceededError, PlotAssignmentError, PlotEnrollmentError
+from .models import Plot
+from .mommy_recipes import fake, get_utcnow
 
 from .test_mixins import PlotMixin
 
@@ -52,7 +52,29 @@ class TestPlotCreatePermissions(PlotMixin, TestCase):
         self.assertEqual(edc_device_app_config.role, CLIENT)
         plot.gps_confirmed_latitude = fake.confirmed_latitude()
         plot.gps_confirmed_longitude = fake.confirmed_longitude()
+        self.assertRaises(PlotAssignmentError, plot.save)
+
+    @override_settings(DEVICE_ID='99')
+    def test_create_plot_enrolled_without_date(self):
+        """Assert cannot update enrolled without enrollment date."""
+        django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
+        self.assertRaises(PlotEnrollmentError, self.make_plot, enrolled=True)
+
+    @override_settings(DEVICE_ID='99')
+    def test_create_plot_enrolled_cannot_unconfirm(self):
+        """Assert cannot unconfirm an enrolled plot."""
+        django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
+        plot = self.make_confirmed_plot()
+        django_apps.app_configs['edc_device'].device_id = '00'
+        edc_device_app_config = django_apps.get_app_config('edc_device')
+        self.assertEqual(edc_device_app_config.role, CLIENT)
+        plot.enrolled = True
+        plot.enrolled_datetime = get_utcnow()
         plot.save()
+        plot = Plot.objects.get(pk=plot.pk)
+        plot.gps_confirmed_latitude = None
+        plot.gps_confirmed_longitude = None
+        self.assertRaises(PlotEnrollmentError, plot.save)
 
 
 class TestPlotCreateCommunity(TestCase):

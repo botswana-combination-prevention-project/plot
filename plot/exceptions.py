@@ -11,3 +11,7 @@ class MaxHouseholdsExceededError(Exception):
 
 class PlotIdentifierError(Exception):
     pass
+
+
+class PlotAssignmentError(Exception):
+    pass

@@ -8,7 +8,9 @@ from django.db.models import options
 from edc_identifier.research_identifier import ResearchIdentifier
 from edc_map.site_mappers import site_mappers
 
-from .exceptions import MaxHouseholdsExceededError, PlotIdentifierError
+from .exceptions import MaxHouseholdsExceededError, PlotIdentifierError, PlotAssignmentError, PlotEnrollmentError
+from edc_base.model.validators.date import datetime_not_future
+
 
 if 'household_model' not in options.DEFAULT_NAMES:
     options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('household_model',)
@@ -22,9 +24,30 @@ class PlotIdentifier(ResearchIdentifier):
 
 class PlotAssignmentMixin(models.Model):
     """Limit modifications to plots that meet certain criteria, e.g. not an HTC plot."""
+
+    htc = models.BooleanField(
+        default=False,
+        editable=False)
+
+    enrolled = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text=('a.k.a. bhs, True indicates that plot is enrolled into BHS. '
+                   'Updated by bcpp_subject.subject_consent post_save'))
+
+    enrolled_datetime = models.DateTimeField(
+        null=True,
+        validators=[datetime_not_future],
+        editable=False,
+        help_text=('datetime that plot is enrolled into BHS. '
+                   'Updated by bcpp_subject.subject_consent post_save'))
+
     def save(self, *args, **kwargs):
         if self.id:
-            pass
+            if self.htc:
+                raise PlotAssignmentError('Plot is assigned to HTC and may not be edited')
+        if self.enrolled and not self.enrolled_datetime:
+            raise PlotEnrollmentError('Plot requires an enrollment datetime for enrolled=True')
         super().save(*args, **kwargs)
 
     class Meta:
