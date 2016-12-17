@@ -1,14 +1,13 @@
+# coding=utf-8
+
+from dateutil.relativedelta import relativedelta
 from model_mommy import mommy
 
 from edc_base.test_mixins.reference_date_mixin import ReferenceDateMixin
 
-from ..constants import ACCESSIBLE
-from ..mommy_recipes import fake
-
-from ..models import Plot, PlotLog
-from plot.mommy_recipes import get_utcnow
-from plot.models import PlotLogEntry
-from dateutil.relativedelta import relativedelta
+from .constants import ACCESSIBLE
+from .models import Plot, PlotLog, PlotLogEntry
+from .mommy_recipes import get_utcnow, fake
 
 
 class PlotMixin(ReferenceDateMixin):
@@ -23,6 +22,7 @@ class PlotMixin(ReferenceDateMixin):
         return plot
 
     def make_confirmed_plot(self):
+        """Make a accessible confirmed plot along with a plot log entry."""
         plot = self.make_plot()
         self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
         plot.gps_confirmed_latitude = fake.confirmed_latitude()
@@ -33,6 +33,7 @@ class PlotMixin(ReferenceDateMixin):
         return plot
 
     def make_plot_log_entry(self, plot=None, report_datetime=None, log_status=None):
+        """Make a plot log entry, defaults to an accessible plot."""
         log_status = log_status or ACCESSIBLE
         plot_log = PlotLog.objects.get(plot=plot)
         plot_log_entry = PlotLogEntry.objects.filter(plot_log=plot_log).order_by('report_datetime').last()
