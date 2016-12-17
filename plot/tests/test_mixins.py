@@ -25,8 +25,8 @@ class PlotMixin(ReferenceDateMixin):
     def make_confirmed_plot(self):
         plot = self.make_plot()
         self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
-        plot.gps_confirm_latitude = fake.confirmed_latitude()
-        plot.gps_confirm_longitude = fake.confirmed_longitude()
+        plot.gps_confirmed_latitude = fake.confirmed_latitude()
+        plot.gps_confirmed_longitude = fake.confirmed_longitude()
         plot.save()
         plot = Plot.objects.get(pk=plot.pk)
         self.assertTrue(plot.confirmed)

@@ -93,8 +93,8 @@ class TestPlot(PlotMixin, TestCase):
         """Asserts a target can be confirmed."""
         plot = mommy.make_recipe('plot.plot')
         self.assertFalse(Plot.objects.get(pk=plot.pk).confirmed)
-        plot.gps_confirm_latitude = fake.confirmed_latitude()
-        plot.gps_confirm_longitude = fake.confirmed_longitude()
+        plot.gps_confirmed_latitude = fake.confirmed_latitude()
+        plot.gps_confirmed_longitude = fake.confirmed_longitude()
         plot.save()
         self.assertTrue(Plot.objects.get(pk=plot.pk).confirmed)
 
@@ -105,8 +105,8 @@ class TestPlot(PlotMixin, TestCase):
             gps_target_lat=fake.target_latitude,
             gps_target_lon=fake.target_longitude)
         self.assertFalse(Plot.objects.get(pk=plot.pk).confirmed)
-        plot.gps_confirm_latitude = fake.latitude()
-        plot.gps_confirm_longitude = fake.longitude()
+        plot.gps_confirmed_latitude = fake.latitude()
+        plot.gps_confirmed_longitude = fake.longitude()
         self.assertRaises(MapperError, plot.save)
 
     def test_plot_save_on_change(self):
@@ -119,8 +119,8 @@ class TestPlot(PlotMixin, TestCase):
     def test_validate_confirmed_plot_changed_to_inaccessible(self):
         plot = self.make_confirmed_plot()
         plot_log_entry = self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
-        plot = Plot.objects.get(pk=plot.pk)
+        plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
         self.assertFalse(plot.accessible)
-        self.assertIsNone(plot.gps_confirm_latitude)
-        self.assertIsNone(plot.gps_confirm_longitude)
+        self.assertIsNone(plot.gps_confirmed_latitude)
+        self.assertIsNone(plot.gps_confirmed_longitude)
         self.assertFalse(plot.confirmed)

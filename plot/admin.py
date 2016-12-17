@@ -21,8 +21,8 @@ class PlotAdmin(ModelAdminMixin):
 
     fields = (
         'status',
-        'gps_confirm_longitude',
-        'gps_confirm_latitude',
+        'gps_confirmed_longitude',
+        'gps_confirmed_latitude',
         'cso_number',
         'household_count',
         'eligible_members',
