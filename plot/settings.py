@@ -2,6 +2,7 @@
 
 import sys
 import os
+from pip.req.req_set import Installed
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,9 +33,7 @@ INSTALLED_APPS = [
     'django_crypto_fields.apps.AppConfig',
     'django_revision.apps.AppConfig',
     'edc_base.apps.AppConfig',
-    'edc_device.apps.AppConfig',
     'edc_identifier.apps.AppConfig',
-    'edc_map.apps.AppConfig',
     'edc_subset_manager.apps.AppConfig',
     'edc_protocol.apps.AppConfig',
     'edc_consent.apps.AppConfig',
@@ -42,7 +41,14 @@ INSTALLED_APPS = [
     'household.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.AppConfig',
+    # 'bcpp_map.apps.AppConfig',
+    'example_survey.apps.AppConfig',
+    'example_survey.apps.EdcMapAppConfig',
+    'example_survey.apps.EdcDeviceAppConfig',
 ]
+
+# if 'test' in sys.argv:
+#     INSTALLED_APPS = INSTALLED_APPS = ['example_survey.apps.AppConfig']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

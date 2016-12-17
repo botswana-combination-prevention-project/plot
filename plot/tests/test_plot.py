@@ -10,14 +10,12 @@ from edc_map.validators import is_valid_map_area
 
 from household.models import Household
 
-from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE
+from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE
 from ..exceptions import PlotIdentifierError, MaxHouseholdsExceededError
 from ..models import Plot
 from ..mommy_recipes import fake
 
 from .test_mixins import PlotMixin
-from plot.models import PlotLogEntry, PlotLog
-from plot.mommy_recipes import get_utcnow
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
@@ -43,6 +41,18 @@ class TestPlotCreatePermissions(PlotMixin, TestCase):
         edc_device_app_config = django_apps.get_app_config('edc_device')
         self.assertEqual(edc_device_app_config.role, CLIENT)
         self.assertRaises(PlotIdentifierError, self.make_plot)
+
+    @override_settings(DEVICE_ID='99')
+    def test_create_plot_htc(self):
+        """Assert cannot confirm an HTC assigned plot."""
+        django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
+        plot = self.make_plot(htc=True)
+        django_apps.app_configs['edc_device'].device_id = '00'
+        edc_device_app_config = django_apps.get_app_config('edc_device')
+        self.assertEqual(edc_device_app_config.role, CLIENT)
+        plot.gps_confirmed_latitude = fake.confirmed_latitude()
+        plot.gps_confirmed_longitude = fake.confirmed_longitude()
+        plot.save()
 
 
 class TestPlotCreateCommunity(TestCase):

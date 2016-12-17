@@ -1,18 +1,14 @@
 # coding=utf-8
 
-import pytz
-
 from django.apps import apps as django_apps
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models import options
 
-from edc_constants.constants import CLOSED
-from edc_device.constants import CLIENT
 from edc_identifier.research_identifier import ResearchIdentifier
 from edc_map.site_mappers import site_mappers
 
-from .exceptions import PlotEnrollmentError, MaxHouseholdsExceededError, PlotIdentifierError
+from .exceptions import MaxHouseholdsExceededError, PlotIdentifierError
 
 if 'household_model' not in options.DEFAULT_NAMES:
     options.DEFAULT_NAMES = options.DEFAULT_NAMES + ('household_model',)
@@ -24,32 +20,11 @@ class PlotIdentifier(ResearchIdentifier):
     label = 'plot_identifier'
 
 
-class EnrollmentModelMixin(models.Model):
-
+class PlotAssignmentMixin(models.Model):
+    """Limit modifications to plots that meet certain criteria, e.g. not an HTC plot."""
     def save(self, *args, **kwargs):
-        """Verifies that a device with permission not a client trying to modify an HTC plot nor
-        a client trying to modify a plot outside of the enrollment date period."""
         if self.id:
-            app_config = django_apps.get_app_config('plot')
-            edc_device_app_config = django_apps.get_app_config('edc_device')
-            if app_config.permissions.change(edc_device_app_config.role):
-                # client may not change htc plots
-                if edc_device_app_config.role == CLIENT and self.htc:
-                    raise PlotEnrollmentError(
-                        'Blocking attempt to modify plot assigned to the HTC campaign. Got {}.'.format(
-                            self.plot_identifier))
-                # client may not change plots report_datetime past full enrollment date
-                if edc_device_app_config.role == CLIENT:
-                    if app_config.enrollment.status == CLOSED:
-                        mapper_instance = site_mappers.get_mapper(site_mappers.current_map_area)
-                        if self.report_datetime > pytz.utc.localize(
-                                mapper_instance.current_survey_dates.full_enrollment_date):
-                            raise PlotEnrollmentError(
-                                'Enrollment for {0} ended on {1}. This plot, and the '
-                                'data related to it, may not be modified. '
-                                'See site_mappers'.format(
-                                    self.community,
-                                    mapper_instance.current_survey_dates.full_enrollment_date.strftime('%Y-%m-%d')))
+            pass
         super().save(*args, **kwargs)
 
     class Meta:
@@ -67,17 +42,18 @@ class PlotIdentifierModelMixin(models.Model):
 
     def save(self, *args, **kwargs):
         """Allows a device with permission to allocate a plot identifier to a new instance."""
-        app_config = django_apps.get_app_config('plot')
-        edc_device_app_config = django_apps.get_app_config('edc_device')
-        if app_config.permissions.add(edc_device_app_config.role):
-            if not self.id:
-                self.plot_identifier = PlotIdentifier(
-                    map_code=site_mappers.get_mapper(site_mappers.current_map_area).map_code,
-                    study_site=site_mappers.get_mapper(site_mappers.current_map_area).map_code).identifier
-        else:
-            raise PlotIdentifierError(
-                'Blocking attempt to create plot identifier. Got device \'{}\'.'.format(
-                    edc_device_app_config.role))
+        if not self.id:
+            edc_device_app_config = django_apps.get_app_config('edc_device')
+            device_permissions = edc_device_app_config.device_permissions.get(self._meta.label_lower)
+            if device_permissions.may_add(edc_device_app_config.role):
+                if not self.id:
+                    self.plot_identifier = PlotIdentifier(
+                        map_code=site_mappers.get_mapper(site_mappers.current_map_area).map_code,
+                        study_site=site_mappers.get_mapper(site_mappers.current_map_area).map_code).identifier
+            else:
+                raise PlotIdentifierError(
+                    'Blocking attempt to create plot identifier. Got device \'{}\'.'.format(
+                        edc_device_app_config.role))
         super().save(*args, **kwargs)
 
     class Meta:

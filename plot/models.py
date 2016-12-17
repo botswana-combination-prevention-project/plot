@@ -1,6 +1,7 @@
 # coding=utf-8
 
 from django.db import models
+from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
 
 from edc_base.model.models import BaseUuidModel, HistoricalRecords
@@ -14,14 +15,12 @@ from edc_base.model.validators.date import datetime_not_future
 from survey.validators import date_in_survey
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
-from .model_mixins import (
-    PlotIdentifierModelMixin, EnrollmentModelMixin, CreateHouseholdsModelMixin)
-from django.db.models.deletion import PROTECT
+from .model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin
 
 
-class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, EnrollmentModelMixin,
+class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
            CreateHouseholdsModelMixin, BaseUuidModel):
-    """A model completed by the user (and initially by the system) to represent a Plot
+    """A model created by the system and updated by the user to represent a Plot
     in the community."""
 
     report_datetime = models.DateTimeField(
