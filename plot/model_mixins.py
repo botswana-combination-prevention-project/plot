@@ -38,12 +38,15 @@ class PlotConfirmationMixin(models.Model):
                 except PlotLog.DoesNotExist:
                     app_config = django_apps.get_app_config('plot')
                     if app_config.excluded_plot(self):
+                        # excluded plots are not normal plots to be surveyed, dont allow confirmation
                         raise PlotConfirmationError(
                             'Plot cannot be confirmed. Got plot logs are not created for excluded plots.')
                     else:
+                        # add Plot -> signal creates PlotLog, -> user creates PlotLogEntry -> user may update Plot
                         raise PlotConfirmationError(
                             'Plot cannot be confirmed. Got plot log not created.')
                 if self.htc:
+                    # HTC is a special case, HTC plots are excluded plots as well
                     raise PlotConfirmationError('Plot cannot be confirmed. Got plot is assigned to HTC.')
                 if not self.accessible:
                     raise PlotConfirmationError('Plot cannot be confirmed. Got plot is inaccessible.')
@@ -51,6 +54,7 @@ class PlotConfirmationMixin(models.Model):
                 self.get_confirmed()
             except MapperError:
                 if self.enrolled:
+                    # once enrolled, dont allow modification to GPS
                     raise PlotEnrollmentError('Plot cannot be unconfirmed. Got plot is already enrolled.')
         super().common_clean()
 
@@ -59,7 +63,6 @@ class PlotConfirmationMixin(models.Model):
 
 
 class PlotEnrollmentMixin(models.Model):
-    """Limit modifications to plots that meet certain criteria, e.g. not an HTC plot."""
 
     htc = models.BooleanField(
         default=False)
@@ -99,7 +102,7 @@ class PlotIdentifierModelMixin(models.Model):
         editable=False)
 
     def common_clean(self):
-        """Allows a device with permission to allocate a plot identifier to a new instance."""
+        """Block a device without permissions from allocating a plot identifier to a new instance."""
         if not self.id:
             edc_device_app_config = django_apps.get_app_config('edc_device')
             device_permissions = edc_device_app_config.device_permissions.get(self._meta.label_lower)
@@ -110,6 +113,7 @@ class PlotIdentifierModelMixin(models.Model):
         super().common_clean()
 
     def save(self, *args, **kwargs):
+        """Allocates a plot identifier to a new instance if permissions allow."""
         if not self.id:
             edc_device_app_config = django_apps.get_app_config('edc_device')
             device_permissions = edc_device_app_config.device_permissions.get(self._meta.label_lower)
@@ -145,11 +149,9 @@ class CreateHouseholdsModelMixin(models.Model):
         super().common_clean()
 
     def create_or_delete_households(self):
-        """Creates or deletes households to try to equal the number of households reported on the plot instance.
+        """Creates or deletes households to try to equal the household_count.
 
-            * households are deleted as long as there are no household members
-              and the household log does not have entries.
-            * bcpp_clinic is a special case to allow for a plot to represent the BCPP Clinic."""
+        Delete will fail if household has data upstream."""
         app_config = django_apps.get_app_config('plot')
         if self.household_count > app_config.max_households:
             raise MaxHouseholdsExceededError(

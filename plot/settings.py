@@ -2,7 +2,6 @@
 
 import sys
 import os
-from pip.req.req_set import Installed
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,7 +40,6 @@ INSTALLED_APPS = [
     'household.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.AppConfig',
-    # 'bcpp_map.apps.AppConfig',
     'example_survey.apps.AppConfig',
     'example_survey.apps.EdcMapAppConfig',
     'example_survey.apps.EdcDeviceAppConfig',
