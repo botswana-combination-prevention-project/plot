@@ -12,6 +12,7 @@ from .exceptions import (
     MaxHouseholdsExceededError, PlotIdentifierError, PlotConfirmationError, PlotEnrollmentError,
     CreateHouseholdError)
 from edc_map.exceptions import MapperError
+from django.db.models.deletion import ProtectedError
 
 
 if 'household_model' not in options.DEFAULT_NAMES:
@@ -163,13 +164,26 @@ class CreateHouseholdsModelMixin(models.Model):
             to_delete = households.count() - self.household_count
             if to_delete > 0:
                 for household in households:
-                    household.delete()
+                    self.safe_delete(household)
                     to_delete -= 1
                     if not to_delete:
                         break
             elif households.count() < self.household_count:
                 for n in range(1, (self.household_count - households.count()) + 1):
                     Household.objects.create(plot=self, household_sequence=n)
+
+    def safe_delete(self, household):
+        """Safe delete households passing on ProtectedErrors."""
+        HouseholdLog = django_apps.get_model('household.householdlog')
+        HouseholdStructure = django_apps.get_model('household.householdstructure')
+        for household_structure in HouseholdStructure.objects.filter(household=household):
+            try:
+                for household_log in HouseholdLog.objects.filter(household_structure=household_structure):
+                    household_log.delete()
+                    household_structure.delete()
+                    household.delete()
+            except ProtectedError:
+                pass
 
     class Meta:
         abstract = True
