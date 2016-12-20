@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'edc_subset_manager.apps.AppConfig',
     'edc_protocol.apps.AppConfig',
     'edc_consent.apps.AppConfig',
+    'edc_sync.apps.AppConfig',
     'member.apps.AppConfig',
     'household.apps.AppConfig',
     'survey.apps.AppConfig',
@@ -93,8 +94,8 @@ if 'test' in sys.argv:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'edc',
-            'USER': 'tsetsiba',
-            'PASSWORD': '',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
             'HOST': '127.0.0.1',
             'PORT': '5432',
             'TEST': {'NAME': 'testplot'}

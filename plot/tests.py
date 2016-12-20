@@ -18,6 +18,8 @@ from .exceptions import (
 from .models import Plot, PlotLog, PlotLogEntry
 from .mommy_recipes import fake, get_utcnow
 from .test_mixins import PlotMixin
+from edc_sync.models import OutgoingTransaction
+from .sync_models import sync_models
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
@@ -250,3 +252,22 @@ class TestNaturalKey(SyncTestSerializerMixin, PlotMixin, TestCase):
 
     def test_get_by_natural_key_attr(self):
         self.sync_test_get_by_natural_key_attr('plot')
+
+    def test_sync_test_natural_keys(self):
+        self.make_confirmed_plot(household_count=1)
+        verbose = False
+        model_objs = []
+        completed_model_objs = {}
+        completed_model_lower = []
+        for outgoing_transaction in OutgoingTransaction.objects.all():
+            if outgoing_transaction.tx_name in sync_models:
+                model_cls = django_apps.get_app_config('plot').get_model(
+                    outgoing_transaction.tx_name.split('.')[1])
+                obj = model_cls.objects.get(pk=outgoing_transaction.tx_pk)
+                if outgoing_transaction.tx_name in completed_model_lower:
+                    continue
+                model_objs.append(obj)
+                completed_model_lower.append(outgoing_transaction.tx_name)
+        completed_model_objs.update({'plot': model_objs})
+        self.sync_test_natural_keys(completed_model_objs, verbose=verbose)
+        print(OutgoingTransaction.objects.all(), "OutgoingTransaction.objects.all()")
