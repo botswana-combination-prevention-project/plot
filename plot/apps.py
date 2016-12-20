@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from edc_base.utils import get_utcnow
 from edc_constants.constants import CLOSED, OPEN
+from survey.apps import AppConfig as SurveyAppConfig
 from plot.constants import TWENTY_PERCENT, FIVE_PERCENT
 
 
