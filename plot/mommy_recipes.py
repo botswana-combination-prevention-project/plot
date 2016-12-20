@@ -13,7 +13,7 @@ from .models import Plot, PlotLogEntry, PlotLog
 
 
 class ReferenceDate(ReferenceDateMixin):
-    consent_model = 'edc_example.subjectconsent'
+    consent_model = 'example_survey.subjectconsent'
 
 
 def get_utcnow():
@@ -53,7 +53,7 @@ plot = Recipe(
 
 plotlog = Recipe(
     PlotLog,
-    # report_datetime=get_utcnow,
+    report_datetime=get_utcnow,
 )
 
 plotlogentry = Recipe(

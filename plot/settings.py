@@ -26,7 +26,6 @@ CURRENT_SURVEYS = [
 ]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,12 +40,12 @@ INSTALLED_APPS = [
     'edc_identifier.apps.AppConfig',
     'edc_subset_manager.apps.AppConfig',
     'edc_protocol.apps.AppConfig',
-    'edc_consent.apps.AppConfig',
     'edc_sync.apps.AppConfig',
     'member.apps.AppConfig',
     'household.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.AppConfig',
+    'example_survey.apps.EdcConsentAppConfig',
     'example_survey.apps.AppConfig',
     'example_survey.apps.EdcMapAppConfig',
     'example_survey.apps.EdcDeviceAppConfig',

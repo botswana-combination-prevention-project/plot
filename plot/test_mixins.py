@@ -3,17 +3,22 @@
 from dateutil.relativedelta import relativedelta
 from model_mommy import mommy
 
+from edc_base.test_mixins.reference_date_mixin import ReferenceDateMixin
+
 from .constants import ACCESSIBLE
 from .models import Plot, PlotLog, PlotLogEntry
-from .mommy_recipes import get_utcnow, fake
+from .mommy_recipes import fake
 
 
-class PlotMixin:
+class PlotMixin(ReferenceDateMixin):
+
+    consent_model = 'example_survey.subjectconsent'
 
     def make_plot(self, **options):
         """With defaults makes a plot as would be made initially by the server."""
         plot = mommy.make_recipe(
             'plot.plot',
+            report_datetime=self.get_utcnow(),
             **options)
         self.assertFalse(plot.confirmed)
         if plot.htc:
@@ -51,7 +56,7 @@ class PlotMixin:
         try:
             report_datetime = plot_log_entry.report_datetime + relativedelta(days=1)
         except AttributeError:
-            report_datetime = get_utcnow() - relativedelta(days=10)
+            report_datetime = self.get_utcnow() - relativedelta(days=10)
         return mommy.make_recipe(
             'plot.plotlogentry',
             report_datetime=report_datetime,

@@ -1,12 +1,13 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, tag
 from django.test.utils import override_settings
 from model_mommy import mommy
 
 from edc_device.constants import CLIENT, CENTRAL_SERVER
 from edc_map.exceptions import MapperError
 from edc_map.validators import is_valid_map_area
+from edc_sync.models import OutgoingTransaction
 from edc_sync.test_mixins import SyncTestSerializerMixin
 
 from household.models import Household
@@ -17,9 +18,8 @@ from .exceptions import (
     CreateHouseholdError, PlotConfirmationError)
 from .models import Plot, PlotLog, PlotLogEntry
 from .mommy_recipes import fake, get_utcnow
-from .test_mixins import PlotMixin
-from edc_sync.models import OutgoingTransaction
 from .sync_models import sync_models
+from .test_mixins import PlotMixin
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
@@ -78,6 +78,10 @@ class TestPlot(PlotMixin, TestCase):
 
     def setUp(self):
         django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
+
+    @tag('testdate')
+    def test_datetime(self):
+        self.assertIsNotNone(self.get_utcnow())
 
     def test_plot_creates_household(self):
         """Assert creating a plot with a household count creates that many households"""
