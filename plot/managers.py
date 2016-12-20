@@ -2,10 +2,8 @@
 
 from django.db import models
 
-from bcpp.manager_mixins import BcppSubsetManagerMixin
 
-
-class PlotManager(BcppSubsetManagerMixin, models.Manager):
+class PlotManager(models.Manager):
 
     reference_model = 'plot.plot'
     to_reference_model = ['household_structure', 'household', 'plot']
@@ -14,7 +12,7 @@ class PlotManager(BcppSubsetManagerMixin, models.Manager):
         return self.get(plot_identifier=plot_identifier)
 
 
-class PlotLogManager(BcppSubsetManagerMixin, models.Manager):
+class PlotLogManager(models.Manager):
 
     lookup = ['plot']
 
@@ -22,7 +20,7 @@ class PlotLogManager(BcppSubsetManagerMixin, models.Manager):
         return self.get(plot__plot_identifier=plot_identifier)
 
 
-class PlotLogEntryManager(BcppSubsetManagerMixin, models.Manager):
+class PlotLogEntryManager(models.Manager):
 
     lookup = ['plot_log', 'plot']
 

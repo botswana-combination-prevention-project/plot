@@ -16,6 +16,7 @@ from survey.validators import date_in_survey
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .exceptions import PlotEnrollmentError
+from .managers import PlotManager, PlotLogManager, PlotLogEntryManager
 from .model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotEnrollmentMixin, PlotConfirmationMixin)
 from plot.constants import INACCESSIBLE
@@ -93,7 +94,7 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
         help_text='Number of attempts to access a plot to determine it\'s status.',
         editable=False)
 
-    # objects = PlotManager()
+    objects = PlotManager()
 
     history = HistoricalRecords()
 
@@ -151,7 +152,7 @@ class PlotLog(BaseUuidModel):
 
     history = HistoricalRecords()
 
-    # objects = PlotLogManager()
+    objects = PlotLogManager()
 
     def __str__(self):
         return str(self.plot)
@@ -200,7 +201,7 @@ class PlotLogEntry(BaseUuidModel):
         help_text=('IMPORTANT: Do not include any names or other personally identifying '
                    'information in this comment'))
 
-    # objects = PlotLogEntryManager()
+    objects = PlotLogEntryManager()
 
     history = HistoricalRecords()
 

@@ -2,6 +2,7 @@
 
 import sys
 import os
+from survey.apps import CurrentSurvey
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,6 +19,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CURRENT_SURVEYS = [
+    CurrentSurvey('example-survey.example-survey-1.annual.test_community', 0),
+    CurrentSurvey('example-survey.example-survey-2.annual.test_community', 1),
+    CurrentSurvey('example-survey.example-survey-3.annual.test_community', 2)
+]
 
 # Application definition
 

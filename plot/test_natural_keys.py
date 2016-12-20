@@ -1,4 +1,4 @@
-from django.test import TestCase, tag
+from django.test import TestCase
 
 from edc_sync.test_mixins import SyncTestSerializerMixin
 
