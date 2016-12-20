@@ -93,8 +93,8 @@ if 'test' in sys.argv:
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'edc',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres',
+            'USER': 'tsetsiba',
+            'PASSWORD': '',
             'HOST': '127.0.0.1',
             'PORT': '5432',
             'TEST': {'NAME': 'testplot'}

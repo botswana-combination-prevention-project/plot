@@ -7,6 +7,7 @@ from model_mommy import mommy
 from edc_device.constants import CLIENT, CENTRAL_SERVER
 from edc_map.exceptions import MapperError
 from edc_map.validators import is_valid_map_area
+from edc_sync.test_mixins import SyncTestSerializerMixin
 
 from household.models import Household
 
@@ -240,3 +241,12 @@ class TestPlot(PlotMixin, TestCase):
         plot.save()
         plot = Plot.objects.get(pk=plot.pk)
         self.assertTrue(plot.accessible)
+
+
+class TestNaturalKey(SyncTestSerializerMixin, PlotMixin, TestCase):
+
+    def test_natural_key_attrs(self):
+        self.sync_test_natural_key_attr('plot')
+
+    def test_get_by_natural_key_attr(self):
+        self.sync_test_get_by_natural_key_attr('plot')
