@@ -270,4 +270,3 @@ class TestNaturalKey(SyncTestSerializerMixin, PlotMixin, TestCase):
                 completed_model_lower.append(outgoing_transaction.tx_name)
         completed_model_objs.update({'plot': model_objs})
         self.sync_test_natural_keys(completed_model_objs, verbose=verbose)
-        print(OutgoingTransaction.objects.all(), "OutgoingTransaction.objects.all()")

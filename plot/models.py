@@ -16,7 +16,6 @@ from survey.validators import date_in_survey
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .exceptions import PlotEnrollmentError
-from .managers import PlotManager, PlotLogManager, PlotLogEntryManager
 from .model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotEnrollmentMixin, PlotConfirmationMixin)
 from plot.constants import INACCESSIBLE
