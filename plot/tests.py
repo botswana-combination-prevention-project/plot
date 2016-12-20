@@ -14,10 +14,9 @@ from .constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE
 from .exceptions import (
     PlotIdentifierError, MaxHouseholdsExceededError, PlotEnrollmentError,
     CreateHouseholdError, PlotConfirmationError)
-from .models import Plot, PlotLog
+from .models import Plot, PlotLog, PlotLogEntry
 from .mommy_recipes import fake, get_utcnow
 from .test_mixins import PlotMixin
-from plot.models import PlotLogEntry
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
