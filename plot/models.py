@@ -21,6 +21,7 @@ from .model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotEnrollmentMixin, PlotConfirmationMixin)
 from plot.constants import INACCESSIBLE
 from django.core.exceptions import MultipleObjectsReturned
+from plot.managers import PlotManager, PlotLogManager, PlotLogEntryManager
 
 
 class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnrollmentMixin,
