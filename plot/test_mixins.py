@@ -3,7 +3,7 @@
 from dateutil.relativedelta import relativedelta
 from model_mommy import mommy
 
-from edc_base.test_mixins.reference_date_mixin import ReferenceDateMixin
+from edc_base_test.mixins.reference_date_mixin import ReferenceDateMixin
 
 from .constants import ACCESSIBLE
 from .models import Plot, PlotLog, PlotLogEntry
@@ -11,8 +11,6 @@ from .mommy_recipes import fake
 
 
 class PlotMixin(ReferenceDateMixin):
-
-    consent_model = 'example_survey.subjectconsent'
 
     def make_plot(self, **options):
         """With defaults makes a plot as would be made initially by the server."""
