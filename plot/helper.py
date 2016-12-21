@@ -12,6 +12,7 @@ from edc_base.utils import get_utcnow
 
 from .plot_identifier import PlotIdentifier
 from .choices import PLOT_STATUS
+from plot.exceptions import PlotEnrollmentError
 
 app_config = django_apps.get_app_config('plot')
 edc_device_app_config = django_apps.get_app_config('edc_device')

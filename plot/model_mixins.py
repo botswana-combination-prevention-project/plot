@@ -121,8 +121,8 @@ class PlotIdentifierModelMixin(models.Model):
             if device_permissions.may_add(edc_device_app_config.role):
                 if not self.id:
                     self.plot_identifier = PlotIdentifier(
-                        map_code=site_mappers.get_mapper(site_mappers.current_map_area).map_code,
-                        study_site=site_mappers.get_mapper(site_mappers.current_map_area).map_code).identifier
+                        map_code=site_mappers.get_mapper(self.map_area).map_code,
+                        study_site=site_mappers.get_mapper(self.map_area).map_code).identifier
         super().save(*args, **kwargs)
 
     class Meta:

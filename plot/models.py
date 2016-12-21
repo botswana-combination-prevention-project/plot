@@ -21,6 +21,7 @@ from .model_mixins import (
 from plot.constants import INACCESSIBLE
 from django.core.exceptions import MultipleObjectsReturned
 from plot.managers import PlotManager, PlotLogManager, PlotLogEntryManager
+from edc_map.site_mappers import site_mappers
 
 
 class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnrollmentMixin,
@@ -122,6 +123,9 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
         return (self.plot_identifier, )
 
     def common_clean(self):
+        if self.map_area not in site_mappers.map_areas:
+            raise MapperError('Invalid map_area. Valid map_areas are {}. Got {}'.format(
+                site_mappers.map_areas, self.map_area))
         if self.id:
             try:
                 self.get_confirmed()
