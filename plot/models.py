@@ -82,7 +82,7 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
         null=True,
         verbose_name='selected',
         choices=SELECTED,
-        editable=False,
+        editable=True,
         help_text=(
             "1=20% of selected plots, 2=additional 5% selected buffer/pool, None=75%"))
 

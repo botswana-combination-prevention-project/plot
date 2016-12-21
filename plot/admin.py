@@ -21,9 +21,9 @@ class PlotAdmin(ModelAdminMixin):
                 ['plot_identifier', 'status', 'gps_confirmed_latitude', 'gps_confirmed_longitude',
                  'cso_number', 'household_count', 'eligible_members', 'time_of_week', 'time_of_day',
                  'description', 'comment']}),
-        ('Advanced options', {
+        ('Advanced options', {  # TODO: (selected field) is added temporarily to add plot manually. IT should be removed.
             'classes': ('collapse',),
-            'fields': ['location_name', 'htc', 'map_area', 'gps_target_lat', 'gps_target_lon', 'target_radius',
+            'fields': ['location_name', 'htc', 'map_area', 'selected', 'gps_target_lat', 'gps_target_lon', 'target_radius',
                        ]}),
     )
 
@@ -33,7 +33,6 @@ class PlotAdmin(ModelAdminMixin):
 
 #     list_display = ('plot_identifier', 'community', 'action', 'status', 'access_attempts', 'bhs', 'htc',
 #                     'created', 'modified')
-
     list_filter = ('accessible', 'confirmed', 'enrolled', 'htc', 'status', 'created', 'modified', 'map_area',
                    'access_attempts', 'hostname_modified',
                    'section', 'sub_section', 'selected', 'time_of_week', 'time_of_day')
@@ -45,6 +44,7 @@ class PlotAdmin(ModelAdminMixin):
         'status': admin.VERTICAL,
         'time_of_week': admin.VERTICAL,
         'time_of_day': admin.VERTICAL,
+        'selected': admin.VERTICAL,  # TODO: (selected field) is added temporarily to add plot manually.
     }
 
 
