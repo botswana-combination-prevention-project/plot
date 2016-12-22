@@ -12,7 +12,7 @@ from edc_map.exceptions import MapperError
 from edc_device.model_mixins import DeviceModelMixin
 from edc_base.model.validators.date import datetime_not_future
 
-from survey.validators import date_in_survey
+from survey.validators import date_in_survey_for_map_area
 
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .exceptions import PlotEnrollmentError
@@ -124,8 +124,10 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
 
     def common_clean(self):
         if self.map_area not in site_mappers.map_areas:
-            raise MapperError('Invalid map_area. Valid map_areas are {}. Got {}'.format(
-                site_mappers.map_areas, self.map_area))
+            raise MapperError(
+                'Invalid map area. Valid map areas are {}. Got {}'.format(
+                    ', '.join(site_mappers.map_areas), self.map_area),
+                'map_area')
         if self.id:
             try:
                 self.get_confirmed()
@@ -133,6 +135,12 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
                 if self.enrolled:
                     raise PlotEnrollmentError('Plot is enrolled and may not be unconfirmed')
         super().common_clean()
+
+    @property
+    def common_clean_exceptions(self):
+        common_clean_exceptions = super().common_clean_exceptions
+        common_clean_exceptions.extend([PlotEnrollmentError, MapperError])
+        return common_clean_exceptions
 
     @property
     def identifier_segment(self):
@@ -176,7 +184,8 @@ class PlotLogEntry(BaseUuidModel):
 
     report_datetime = models.DateTimeField(
         verbose_name="Report date",
-        validators=[datetime_not_future, date_in_survey],
+        # TODO: get this validator to work
+        # validators=[datetime_not_future, date_in_survey_for_map_area],
         default=get_utcnow)
 
     log_status = models.CharField(

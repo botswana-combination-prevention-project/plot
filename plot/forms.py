@@ -4,21 +4,18 @@ from datetime import datetime
 
 from django import forms
 from django.apps import apps as django_apps
+from django.core.exceptions import MultipleObjectsReturned
 from django.forms.utils import ErrorList
 
+from edc_base.modelform_mixins import CommonCleanModelFormMixin
 from edc_map.site_mappers import site_mappers
 
 from .constants import INACCESSIBLE, CONFIRMED, ACCESSIBLE
-from .exceptions import (
-    PlotIdentifierError, PlotConfirmationError, MaxHouseholdsExceededError, PlotEnrollmentError,
-    CreateHouseholdError)
 
 from .models import Plot, PlotLog, PlotLogEntry
-from edc_map.exceptions import MapperError
-from django.core.exceptions import MultipleObjectsReturned
 
 
-class PlotForm(forms.ModelForm):
+class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
 
     plot_identifier = forms.CharField(
         label='Plot identifier',
@@ -46,12 +43,6 @@ class PlotForm(forms.ModelForm):
                 raise forms.ValidationError('Plot log entry is required before attempting to modify a plot.')
             except MultipleObjectsReturned:
                 pass
-        try:
-            instance = self._meta.model(id=self.instance.id, **cleaned_data)
-            instance.common_clean()
-        except (MaxHouseholdsExceededError, PlotIdentifierError, PlotConfirmationError, PlotEnrollmentError,
-                MapperError, CreateHouseholdError) as e:
-            raise forms.ValidationError(str(e))
         return cleaned_data
 
     class Meta:
