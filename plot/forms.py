@@ -23,12 +23,6 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
         help_text='This field is read only.',
         widget=forms.TextInput(attrs={'size': 15, 'readonly': True}))
 
-    accessible = forms.BooleanField(
-        label='Accessible',
-        required=False,
-        help_text='This field is read only.',
-        widget=forms.CheckboxInput(attrs={'disabled': True}))
-
     def clean(self):
         cleaned_data = super().clean()
         app_config = django_apps.get_app_config('plot')
@@ -162,9 +156,10 @@ class PlotLogEntryForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(PlotLogEntryForm, self).clean()
         plot_log = cleaned_data.get('plot_log')
-        plot_log.plot.allow_enrollment('default',
-                                       plot_instance=plot_log.plot,
-                                       exception_cls=forms.ValidationError)
+        # TODO: add the allow_enrollment method to plot.
+#         plot_log.plot.allow_enrollment('default',
+#                                        plot_instance=plot_log.plot,
+#                                        exception_cls=forms.ValidationError)
         # confirm that an inaccessible log entry is not entered against a confirmed plot.
         status = cleaned_data.get('log_status')
         if cleaned_data.get('rarely_present') == 'Yes' and cleaned_data.get('status') == 'PRESENT':
