@@ -6,14 +6,10 @@ from faker import Faker
 from faker.providers import BaseProvider
 from model_mommy.recipe import Recipe
 
-from django.apps import apps as django_apps
+from edc_base_test.utils import get_utcnow
 
 from .constants import RESIDENTIAL_HABITABLE, TWENTY_PERCENT
 from .models import Plot, PlotLogEntry, PlotLog
-
-
-def get_utcnow():
-    return django_apps.get_app_config('edc_base_test').get_utcnow()
 
 
 class GpsProvider(BaseProvider):
