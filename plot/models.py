@@ -12,8 +12,6 @@ from edc_map.exceptions import MapperError
 from edc_device.model_mixins import DeviceModelMixin
 from edc_base.model.validators.date import datetime_not_future
 
-from survey.validators import date_in_survey
-
 from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .exceptions import PlotEnrollmentError
 from .model_mixins import (
