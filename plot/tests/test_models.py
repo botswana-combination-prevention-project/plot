@@ -12,14 +12,15 @@ from edc_sync.test_mixins import SyncTestSerializerMixin
 
 from household.models import Household
 
-from .constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE
-from .exceptions import (
+from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE
+from ..exceptions import (
     PlotIdentifierError, MaxHouseholdsExceededError, PlotEnrollmentError,
     CreateHouseholdError, PlotConfirmationError)
-from .models import Plot, PlotLog, PlotLogEntry
-from .mommy_recipes import fake, get_utcnow
-from .sync_models import sync_models
-from .test_mixins import PlotMixin
+from ..models import Plot, PlotLog, PlotLogEntry
+from ..mommy_recipes import fake, get_utcnow
+from ..sync_models import sync_models
+
+from .mixins import PlotMixin
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):

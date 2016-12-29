@@ -75,6 +75,7 @@ class PlotEnrollmentMixin(models.Model):
 
     enrolled_datetime = models.DateTimeField(
         null=True,
+        blank=True,
         help_text=('datetime that plot is enrolled into BHS. '
                    'Updated by bcpp_subject.subject_consent post_save'))
 

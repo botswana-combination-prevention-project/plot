@@ -5,9 +5,9 @@ from model_mommy import mommy
 
 from edc_base_test.mixins.dates_test_mixin import DatesTestMixin
 
-from .constants import ACCESSIBLE
-from .models import Plot, PlotLog, PlotLogEntry
-from .mommy_recipes import fake
+from ..constants import ACCESSIBLE
+from ..models import Plot, PlotLog, PlotLogEntry
+from ..mommy_recipes import fake
 
 
 class PlotMixin(DatesTestMixin):

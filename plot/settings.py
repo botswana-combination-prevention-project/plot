@@ -43,12 +43,12 @@ INSTALLED_APPS = [
     'edc_protocol.apps.AppConfig',
     'edc_sync.apps.AppConfig',
     'member.apps.AppConfig',
+    'example_survey.apps.EdcMapAppConfig',
     'household.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.AppConfig',
     'example_survey.apps.EdcBaseTestAppConfig',
     'example_survey.apps.AppConfig',
-    'example_survey.apps.EdcMapAppConfig',
     'example_survey.apps.EdcDeviceAppConfig',
 ]
 

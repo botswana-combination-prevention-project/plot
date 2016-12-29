@@ -17,16 +17,16 @@ class GpsProvider(BaseProvider):
     target_point = Point(-25.330451, 25.556502)
 
     def target_latitude(self):
-        return self.target_point.latitude - random() / 10000000
+        return round(self.target_point.latitude - random() / 10000000, 15)
 
     def target_longitude(self):
-        return self.target_point.longitude - random() / 10000000
+        return round(self.target_point.longitude - random() / 10000000, 15)
 
     def confirmed_latitude(self):
-        return self.target_point.latitude - random() / 10000000
+        return round(self.target_point.latitude - random() / 10000000, 15)
 
     def confirmed_longitude(self):
-        return self.target_point.longitude - random() / 10000000
+        return round(self.target_point.longitude - random() / 10000000, 15)
 
 fake = Faker()
 fake.add_provider(GpsProvider)
@@ -45,7 +45,6 @@ plot = Recipe(
 
 plotlog = Recipe(
     PlotLog,
-    report_datetime=get_utcnow,
 )
 
 plotlogentry = Recipe(
