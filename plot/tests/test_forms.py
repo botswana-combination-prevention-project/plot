@@ -4,9 +4,10 @@ from model_mommy import mommy
 from ..forms import PlotForm, PlotLogEntryForm
 from ..models import PlotLog
 
+from ..constants import ACCESSIBLE
+from ..models import PlotLogEntry
+
 from .mixins import PlotMixin
-from plot.constants import ACCESSIBLE
-from plot.models import PlotLogEntry
 
 
 class TestForms(PlotMixin, TestCase):

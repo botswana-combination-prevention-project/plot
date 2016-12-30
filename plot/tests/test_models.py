@@ -80,7 +80,6 @@ class TestPlot(PlotMixin, TestCase):
     def setUp(self):
         django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
 
-    @tag('testdate')
     def test_datetime(self):
         self.assertIsNotNone(self.get_utcnow())
 
