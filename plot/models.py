@@ -1,5 +1,7 @@
 # coding=utf-8
 
+import arrow
+
 from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
@@ -186,6 +188,10 @@ class PlotLogEntry(BaseUuidModel):
         # validators=[datetime_not_future, date_in_survey_for_map_area],
         default=get_utcnow)
 
+    report_date = models.DateField(
+        editable=False,
+        help_text='date value of report_datetime for unique constraint')
+
     log_status = models.CharField(
         verbose_name='What is the status of this plot?',
         max_length=25,
@@ -216,6 +222,11 @@ class PlotLogEntry(BaseUuidModel):
 
     history = HistoricalRecords()
 
+    def save(self, *args, **kwargs):
+        self.report_date = arrow.Arrow.fromdatetime(
+            self.report_datetime, self.report_datetime.tzinfo).to('utc').date()
+        super().save(*args, **kwargs)
+
     def natural_key(self):
         return (self.report_datetime, ) + self.plot_log.natural_key()
     natural_key.dependencies = ['plot.plot_log']
@@ -225,5 +236,5 @@ class PlotLogEntry(BaseUuidModel):
 
     class Meta:
         app_label = 'plot'
-        unique_together = ('plot_log', 'report_datetime')
+        unique_together = ('plot_log', 'report_date')
         ordering = ('report_datetime', )

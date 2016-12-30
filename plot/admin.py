@@ -77,6 +77,7 @@ class PlotLogEntryAdmin(ModelAdminMixin):
 
 class PlotLogEntryInline(admin.TabularInline):
     model = PlotLogEntry
+    form = PlotLogEntryForm
     extra = 0
     max_num = 5
 

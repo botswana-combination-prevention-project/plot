@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from datetime import datetime
+import arrow
 
 from django import forms
 from django.apps import apps as django_apps
@@ -13,6 +13,7 @@ from edc_map.site_mappers import site_mappers
 from .constants import INACCESSIBLE, CONFIRMED, ACCESSIBLE
 
 from .models import Plot, PlotLog, PlotLogEntry
+from edc_constants.constants import YES, NO
 
 
 class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
@@ -162,9 +163,9 @@ class PlotLogEntryForm(forms.ModelForm):
 #                                        exception_cls=forms.ValidationError)
         # confirm that an inaccessible log entry is not entered against a confirmed plot.
         status = cleaned_data.get('log_status')
-        if cleaned_data.get('rarely_present') == 'Yes' and cleaned_data.get('status') == 'PRESENT':
+        if cleaned_data.get('rarely_present') == YES and cleaned_data.get('status') == 'PRESENT':
             raise forms.ValidationError('Members cannot be present and have the be rarely present.')
-        if cleaned_data.get('rarely_present') == 'Yes' and cleaned_data.get('supervisor_vdc_confirm') == 'No':
+        if cleaned_data.get('rarely_present') == YES and cleaned_data.get('supervisor_vdc_confirm') == NO:
             raise forms.ValidationError('There needs to be a confirmation from supervisor and VDC for a '
                                         'plot with rarely or seasonally present members.')
         if status == INACCESSIBLE and plot_log.plot.action == CONFIRMED:
@@ -177,16 +178,20 @@ class PlotLogEntryForm(forms.ModelForm):
             if cleaned_data.get('reason_other'):
                 self._errors['reason_other'] = ErrorList([u'This field is not required.'])
                 raise forms.ValidationError('Other reason is not required if plot is accessible.')
-        if PlotLogEntry.objects.filter(
-                created__year=datetime.today().year,
-                created__month=datetime.today().month,
-                created__day=datetime.today().day,
-                plot_log__plot=plot_log.plot):
+        report_datetime = cleaned_data.get('report_datetime')
+        report_date = arrow.Arrow.fromdatetime(report_datetime, report_datetime.tzinfo).to('utc').date()
+        try:
+            PlotLogEntry.objects.get(report_date=report_date, plot_log=plot_log)
+        except PlotLogEntry.DoesNotExist:
+            pass
+        else:
             if not self.instance.id:
-                raise forms.ValidationError('The plot log entry has been added already.')
+                raise forms.ValidationError(
+                    'A plot log entry for {} already exists.'.format(report_date.strftime('%Y-%m-%d')))
 
         return cleaned_data
 
     class Meta:
         model = PlotLogEntry
         fields = '__all__'
+        localized_fields = ['report_datetime']
