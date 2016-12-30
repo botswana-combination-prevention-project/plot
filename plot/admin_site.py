@@ -7,5 +7,5 @@ class PlotAdminSite(AdminSite):
     site_title = 'Plot'
     site_header = 'Plot'
     index_title = 'Plot'
-    site_url = '/'
+    site_url = '/plot/list/'
 plot_admin = PlotAdminSite(name='plot_admin')

@@ -28,6 +28,7 @@ class Enrollment:
 
 class AppConfig(DjangoAppConfig):
     name = 'plot'
+    list_template_name = None
     enrollment = Enrollment(
         timezone.now() - relativedelta(years=1),
         timezone.now() + relativedelta(years=1))
