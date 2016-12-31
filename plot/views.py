@@ -48,8 +48,9 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
     form_class = SearchPlotForm
     template_name = app_config.list_template_name
     paginate_by = 10
-    search_url_name = 'plot:list_url'
+    list_url = 'plot:list_url'
     search_model = Plot
+    url_lookup_parameters = ['id', 'plot_identifier']
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
@@ -64,6 +65,7 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
         return q, options
 
     def queryset_wrapper(self, qs):
+        """Override to wrap each instance in the paginated queryset in `Result`."""
         results = []
         for obj in qs:
             results.append(Result(obj))
@@ -71,9 +73,5 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        plot_results = Plot.objects.all().order_by('-created')
-        context.update(
-            search_url_name=self.search_url_name,
-            navbar_selected='plot',
-            results=self.paginate(plot_results))
+        context.update(navbar_selected='plot')
         return context
