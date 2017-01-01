@@ -1,3 +1,4 @@
+{% load tz %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
@@ -7,53 +8,68 @@
         <div class="panel-group">
           <div class="panel panel-info">
             <div class="panel-heading clearfix">
-              <i class="fa fa-building fa-lg"></i>
-              <a title="add plot" href="{% url 'plot:plot_admin:plot_plot_add' %}?next=plot:list_url" class="btn btn-sm btn-default" role="button"><span class="glyphicon glyphicon-plus"></span> Add Plot</a>
+              <div class="container-fluid"><i class="fa fa-building fa-lg"></i>
+              <a title="add plot" href="{% url 'plot:plot_admin:plot_plot_add' %}?next=plot:list_url" class="btn btn-sm btn-default" role="button"><i class="fa fa-plus fa-sm"></i> Add ESS Plot</a>
               <a title="confirmed" class="btn btn-sm btn-default" role="button">Confirmed</a>
               <a title="not confirmed" class="btn btn-sm btn-default" role="button">Not confirmed</a>
               {% include 'edc_search/search_form.html' %}
-            </div>
+            </div></div>
             <div class="panel-body">
               <!--start results-->
               {% if results %}
-                  <div class="table-responsive">
+                  <div class="table table-responsive">
                     <table class="table table-condensed table-hover small">
                       <thead>
                       		<th>#</th>
                       		<th></th>
-                      		<th>Plot</th>
-                      		<th>Status</th>
-                      		<th></th>
-                      		<th>Modified</th>
+                          <th>Status</th>
+                          <th>Attempts</th>
+                          <th>Type</th>
+                          <th>Estimate</th>
+                      		<th>Modified</th>                          
+                          <th>Host</th>                          
                         </thead>
                         <tbody>
                         {% for result in results %}
                           <tr>
+                            <!--counter-->
                             <td>{{ forloop.counter }}</td>
-                            <td>
-                            	{% if result.plot.confirmed %}
-                            		<center><i class="fa fa-check fa-md" aria-hidden="true"></i></center>
-                              {% else %}
+                            <!--buttons-->
+                            <td style="white-space: nowrap">
+                            	{% if not result.plot.confirmed %}
                                 {% if result.plot_log_entry %}
-                                  <a role="button" class="btn btn-sm btn-success {{result.plot_log_entry_link_html_class}}" href="{% url 'plot:plot_admin:plot_plotlogentry_change' result.plot_log_entry.entry.pk %}?plot_log={{result.log.pk}}&next=plot:list_url"><span class="glyphicon glyphicon-pencil"></span>Edit Entry</a>
+                                  <a role="button" class="btn btn-sm btn-success {{result.plot_log_entry_link_html_class}}" href="{% url 'plot:plot_admin:plot_plotlogentry_change' result.plot_log_entry.entry.pk %}?plot_log={{result.plot_log.pk}}&next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}">
+                                    <i class="fa fa-pencil fa-sm"></span>Log Entry</a>
                                 {% else %}
-                                    <a role="button" class="btn btn-sm btn-default" href="{% url 'plot:plot_admin:plot_plotlogentry_add' %}?plot_log={{result.log.pk}}&next=plot:list_url">
-                                    <span class="glyphicon glyphicon-plus"></span>Add Log</a>
+                                  <a role="button" class="btn btn-sm btn-warning" href="{% url 'plot:plot_admin:plot_plotlogentry_add' %}?plot_log={{result.plot_log.pk}}&next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}">
+                                    <span class="fa fa-plus fa-sm"></span> Add Log Entry</a>
                                 {% endif %}
                             	{% endif %}
+                              <a title="plot logs" role="button" class="btn btn-sm btn-default {% if not result.plot_log_entries %} disabled{% endif %}" href="{% url 'plot:plot_admin:plot_plotlogentry_changelist' %}?q={{ result.plot.plot_identifier }}"><i class="fa fa-files-o fa-lg"></i></a>
+                              <a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}{% if not result.plot_log_entries %} disabled{% endif %}" href="{% url 'plot:plot_admin:plot_plot_change' result.plot.id %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}"><i class="fa fa-building-o fa-lg"></i> {{ result.plot.plot_identifier }} <i class="fa fa-pencil fa-sm"></i></a>
+                              <a title="households" role="button" class="btn btn-sm btn-default{% if result.plot.household_count == 0 %} disabled{% endif %}" href="{% url 'household:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-home fa-lg"></i></a>
+                              <a title="members" role="button" class="btn btn-sm btn-default{% if result.plot.household_count == 0 and result.plot.member_count == 0 %} disabled{% endif %}" href="{% url 'member:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-group fa-lg"></i></a>
+                          		<a title="map" role="button" class="btn btn-sm btn-default" href="#"><i class="fa fa-map-marker fa-lg"></i></a>
                             </td>
-                            <td><a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}" href="{% url 'plot:plot_admin:plot_plot_change' result.plot.id %}?next=plot:list_url"><span class="glyphicon glyphicon-pencil"></span>  {{ result.plot.plot_identifier }}</a></td>
-                            <td>{{ result.plot.get_status_display }}</td>
+                            <!--status-->
                             <td>
-                              <a role="button" title="households" class="btn btn-sm btn-default" href="{% url 'household:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-home fa-lg"></i> <span class="badge">{{ result.plot.household_count }}</span></a>
-                              <a role="button" title="members" class="btn btn-sm btn-default" href="{% url 'member:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-group fa-lg"></i> <span class="badge">{{ result.plot.eligible_members }}</span></a>
-                            	{% if result.plot.confirmed %}
-                            		<a role="button" title="map" class="btn btn-sm btn-default" href="#"><i class="fa fa-map-marker fa-lg"></i> {{result.plot.community_name|title}}</a>
-                            	{% else %}
-                            		<i class="fa fa-map-marker fa-lg"></i> <span class="text text-danger">Not confirmed</span>
-                            	{% endif %}
+                              {% if result.plot.confirmed %}<span class="label label-success label-sm">confirmed</span>{% else %}<span class="label label-warning label-sm">unconfirmed</span>{% endif %}
+                              {% if result.plot.status %}<span class="label label-{% if result.plot.status == RESIDENTIAL_HABITABLE %}success{% else %}info{% endif %} label-sm">{{ result.plot.get_status_display }}</span>{% endif %}
                             </td>
-                            <td>{{ result.plot.modified|date:"Y-m-d" }}</td>
+                            <td>{% if result.plot.access_attempts != 0 %}{{result.plot.access_attempts}}{% endif %}</td>
+                            <!--type-->
+                            <td>
+                              {% if result.plot.ess %}<span class="label label-info label-sm">ESS</span>{% endif %}
+                              {% if result.plot.rss %}<span class="label label-info label-sm">RSS</span>{% endif %}
+                              {% if result.plot.htc and result.excluded_plot %}<span class="label label-error label-sm">HTC</span>{% endif %}
+                              {% if result.plot.htc and not result.excluded_plot %}<span class="label label-info label-sm">HTC</span>{% endif %}
+                              {% if result.excluded_plot %}<span class="label label-error label-sm">excluded</span>{% endif %}
+                            </td>
+                            <!--estimate-->
+                            <td>{% if result.plot_log_entries %}{{ result.plot.household_count }} <i class="fa fa-home fa-sm"></i> {{ result.plot.eligible_members }} <i class="fa fa-group fa-sm"></i>{% endif %}</td>
+                            <!--audit-->
+                            <td>{{ result.plot.modified|date:"Y-m-d H:i" }}</td>
+                            <td>{{ result.plot.hostname_created }}</td>
                           </tr>
                         {% endfor %}
                       </tbody>
