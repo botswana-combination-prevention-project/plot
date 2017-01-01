@@ -13,6 +13,7 @@ from edc_search.forms import SearchForm
 from edc_search.view_mixins import SearchViewMixin
 
 from .models import Plot, PlotLog, PlotLogEntry
+from plot.constants import RESIDENTIAL_HABITABLE
 
 app_config = django_apps.get_app_config('plot')
 
@@ -25,22 +26,18 @@ class SearchPlotForm(SearchForm):
 
 class Result:
     def __init__(self, plot):
+        HouseholdMember = django_apps.get_model(*'member.householdmember'.split('.'))
         self.plot = plot
         self.plot.community_name = ' '.join(self.plot.map_area.split('_'))
         self.plot_log = PlotLog.objects.get(plot=plot)
-        try:
-            self.plot_log_entries = PlotLogEntry.objects.filter(plot_log__plot=plot)
-        except PlotLogEntry.DoesNotExist:
-            self.plot_log_entries = None
-        try:
-            self.plot_log_entry_today = PlotLogEntry.objects.get(
-                plot_log__plot=plot,
-                report_datetime__year=arrow.utcnow().year,
-                report_datetime__month=arrow.utcnow().month,
-                report_datetime__day=arrow.utcnow().day)
-        except PlotLogEntry.DoesNotExist:
-            self.plot_log_entry_today = None
+        self.plot_log_entries = PlotLogEntry.objects.filter(plot_log__plot=plot)
+        self.plot_log_entry_today = PlotLogEntry.objects.filter(
+            plot_log__plot=plot,
+            report_date=arrow.utcnow().date()).order_by('report_datetime').last()
         self.plot_log_entry_link_html_class = "disabled" if plot.confirmed else "active"
+        self.plot.member_count = HouseholdMember.objects.filter(
+            household_structure__household__plot=self.plot).count()
+        self.excluded_plot = app_config.excluded_plot(plot)
 
 
 class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
@@ -51,6 +48,7 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
     list_url = 'plot:list_url'
     search_model = Plot
     url_lookup_parameters = ['id', 'plot_identifier']
+    queryset_ordering = '-created'
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
@@ -73,5 +71,7 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(navbar_selected='plot')
+        context.update(
+            navbar_selected='plot',
+            RESIDENTIAL_HABITABLE=RESIDENTIAL_HABITABLE)
         return context
