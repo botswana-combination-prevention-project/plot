@@ -8,8 +8,6 @@ from django.utils import timezone
 from edc_base.utils import get_utcnow
 from edc_constants.constants import CLOSED, OPEN
 
-from plot.constants import TWENTY_PERCENT, FIVE_PERCENT
-
 
 class Enrollment:
     def __init__(self, opening_datetime, closing_datetime):
@@ -34,12 +32,19 @@ class AppConfig(DjangoAppConfig):
         timezone.now() + relativedelta(years=1))
     max_households = 9
     special_locations = ['clinic', 'mobile']
+    add_plot_map_areas = ['test_community']
 
     def ready(self):
         from plot.signals import create_households_on_post_save, update_plot_on_post_save
 
     def excluded_plot(self, obj):
-        if obj.htc:
-            return True
-        if obj.selected not in [TWENTY_PERCENT, FIVE_PERCENT]:
-            return True
+        """Returns True if the plot is excluded from being surveyed.
+
+        If True, no further data will be added, e.g. no plot log, etc. See signals"""
+        excluded_plot = False
+        if obj.htc and not obj.ess:
+            excluded_plot = True
+        return excluded_plot
+
+    def allow_add_plot(self, map_area):
+        return True if map_area in self.add_plot_map_areas else False
