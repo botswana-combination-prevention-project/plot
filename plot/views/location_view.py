@@ -20,6 +20,11 @@ class LocationView(EdcBaseViewMixin, MapImageView):
     zoom_levels = django_apps.get_app_config('edc_map').zoom_levels
     map_image_view_base_html = 'bcpp/base.html'
 
+    def point(self, obj):
+        if obj.confirmed:
+            return obj.confirmed_point
+        return obj.target_point
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
