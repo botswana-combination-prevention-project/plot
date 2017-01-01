@@ -2,7 +2,7 @@
 
 from django.apps import apps as django_apps
 from django.core.validators import MaxValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import options
 
 from edc_identifier.research_identifier import ResearchIdentifier
@@ -10,9 +10,12 @@ from edc_map.site_mappers import site_mappers
 
 from .exceptions import (
     MaxHouseholdsExceededError, PlotIdentifierError, PlotConfirmationError, PlotEnrollmentError,
-    CreateHouseholdError)
+    CreateHouseholdError, PlotCreateError)
 from edc_map.exceptions import MapperError
 from django.db.models.deletion import ProtectedError
+from plot.constants import TWENTY_PERCENT, FIVE_PERCENT
+from plot.choices import SELECTED
+from django.db.utils import IntegrityError
 
 
 if 'household_model' not in options.DEFAULT_NAMES:
@@ -29,7 +32,8 @@ class PlotConfirmationMixin(models.Model):
 
     def common_clean(self):
         if not self.id and (self.gps_confirmed_latitude or self.gps_confirmed_longitude):
-            raise PlotConfirmationError('Blocking attempt to confirm plot on add.')
+            if not self.ess:
+                raise PlotConfirmationError('Blocking attempt to confirm non-ESS plot on add.')
         if self.id:
             if self.gps_confirmed_latitude and self.gps_confirmed_longitude:
                 self.get_confirmed()
@@ -49,8 +53,8 @@ class PlotConfirmationMixin(models.Model):
                 if self.htc:
                     # HTC is a special case, HTC plots are excluded plots as well
                     raise PlotConfirmationError('Plot cannot be confirmed. Got plot is assigned to HTC.')
-                if not self.accessible:
-                    raise PlotConfirmationError('Plot cannot be confirmed. Got plot is inaccessible.')
+#                 if self.status == INACCESSIBLE:
+#                     raise PlotConfirmationError('Plot cannot be confirmed. Got plot is inaccessible.')
             try:
                 self.get_confirmed()
             except MapperError:
@@ -59,6 +63,12 @@ class PlotConfirmationMixin(models.Model):
                     raise PlotEnrollmentError('Plot cannot be unconfirmed. Got plot is already enrolled.')
         super().common_clean()
 
+    @property
+    def common_clean_exceptions(self):
+        common_clean_exceptions = super().common_clean_exceptions
+        common_clean_exceptions.extend([PlotConfirmationError])
+        return common_clean_exceptions
+
     class Meta:
         abstract = True
 
@@ -66,11 +76,31 @@ class PlotConfirmationMixin(models.Model):
 class PlotEnrollmentMixin(models.Model):
 
     htc = models.BooleanField(
-        default=False)
+        default=False,
+        editable=False)
+
+    ess = models.BooleanField(
+        default=False,
+        blank=True,
+        help_text="True if plot is part of ESS and outside of plots randomly selected")
+
+    rss = models.BooleanField(
+        editable=False,
+        default=False,
+        help_text="True if plot is one of those randomly selected. See plot.selected")
+
+    selected = models.CharField(
+        max_length=25,
+        verbose_name='selected',
+        choices=SELECTED,
+        editable=False,
+        null=True,
+        help_text=(
+            "1=20% of selected plots, 2=additional 5% selected buffer/pool, None=75%"))
 
     enrolled = models.BooleanField(
         default=False,
-        help_text=('a.k.a. bhs, True indicates that plot is enrolled into BHS. '
+        help_text=('True indicates that plot is enrolled into a survey. '
                    'Updated by bcpp_subject.subject_consent post_save'))
 
     enrolled_datetime = models.DateTimeField(
@@ -80,14 +110,27 @@ class PlotEnrollmentMixin(models.Model):
                    'Updated by bcpp_subject.subject_consent post_save'))
 
     def common_clean(self):
-        if self.id:
-            if self.htc and self.enrolled:
-                raise PlotEnrollmentError('Plot cannot be enrolled. Got plot is assigned to HTC.')
-            if self.enrolled and not self.enrolled_datetime:
-                raise PlotEnrollmentError('Plot cannot be enrolled. Got plot requires an enrolled datetime.')
+        if self.htc and self.selected in [TWENTY_PERCENT, FIVE_PERCENT]:
+            if self.enrolled:
+                raise PlotEnrollmentError(
+                    'Plot cannot be enrolled. Plot cannot be assigned to both HTC and RSS.')
+            else:
+                raise PlotCreateError('Plot cannot be assigned to both HTC and RSS.')
+        if self.htc and not self.ess and self.enrolled:
+            raise PlotEnrollmentError(
+                'Plot cannot be enrolled. Got plot is assigned to HTC.')
+        if self.enrolled and not self.enrolled_datetime:
+            raise PlotEnrollmentError('Plot cannot be enrolled. Got plot requires an enrolled datetime.')
         super().common_clean()
 
+    @property
+    def common_clean_exceptions(self):
+        common_clean_exceptions = super().common_clean_exceptions
+        common_clean_exceptions.extend([PlotEnrollmentError, PlotCreateError])
+        return common_clean_exceptions
+
     def save(self, *args, **kwargs):
+        self.rss = True if self.selected in [TWENTY_PERCENT, FIVE_PERCENT] else False
         super().save(*args, **kwargs)
 
     class Meta:
@@ -113,6 +156,12 @@ class PlotIdentifierModelMixin(models.Model):
                     'Blocking attempt to create plot identifier. Got device \'{}\'.'.format(
                         edc_device_app_config.role))
         super().common_clean()
+
+    @property
+    def common_clean_exceptions(self):
+        common_clean_exceptions = super().common_clean_exceptions
+        common_clean_exceptions.extend([PlotIdentifierError])
+        return common_clean_exceptions
 
     def save(self, *args, **kwargs):
         """Allocates a plot identifier to a new instance if permissions allow."""
@@ -143,12 +192,19 @@ class CreateHouseholdsModelMixin(models.Model):
             if self.household_count > 0:
                 raise CreateHouseholdError(
                     'Households cannot exist on a unconfirmed plot. '
-                    'Got household count = {}'.format(self.household_count))
+                    'Got household count = {}. Perhaps add the confirmation GPS point.'.format(
+                        self.household_count))
             if self.eligible_members > 0:
                 raise CreateHouseholdError(
                     'Households cannot exist on a unconfirmed plot. '
                     'Got eligible_members eligible_members = {}'.format(self.eligible_members))
         super().common_clean()
+
+    @property
+    def common_clean_exceptions(self):
+        common_clean_exceptions = super().common_clean_exceptions
+        common_clean_exceptions.extend([CreateHouseholdError, MaxHouseholdsExceededError])
+        return common_clean_exceptions
 
     def create_or_delete_households(self):
         """Creates or deletes households to try to equal the household_count.
@@ -170,8 +226,12 @@ class CreateHouseholdsModelMixin(models.Model):
                     if not to_delete:
                         break
             elif households.count() < self.household_count:
-                for n in range(1, (self.household_count - households.count()) + 1):
-                    Household.objects.create(plot=self, household_sequence=n)
+                    for n in range(1, self.household_count + 1):
+                        with transaction.atomic():
+                            try:
+                                Household.objects.create(plot=self, household_sequence=n)
+                            except IntegrityError:
+                                pass
 
     def safe_delete(self, household):
         """Safe delete households passing on ProtectedErrors."""

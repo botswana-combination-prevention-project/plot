@@ -1,6 +1,10 @@
 # coding=utf-8
 
 
+class PlotCreateError(Exception):
+    pass
+
+
 class PlotEnrollmentError(Exception):
     pass
 
