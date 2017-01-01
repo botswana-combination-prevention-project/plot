@@ -8,7 +8,6 @@ from model_mommy.recipe import Recipe
 
 from edc_base_test.utils import get_utcnow
 
-from .constants import RESIDENTIAL_HABITABLE, TWENTY_PERCENT
 from .models import Plot, PlotLogEntry, PlotLog
 
 
@@ -36,9 +35,9 @@ plot = Recipe(
     report_datetime=get_utcnow,
     map_area='test_community',
     household_count=0,
-    status=RESIDENTIAL_HABITABLE,
+    status=None,
     eligible_members=0,
-    selected=TWENTY_PERCENT,
+    selected=None,
     gps_target_lat=fake.target_latitude,
     gps_target_lon=fake.target_longitude,
 )

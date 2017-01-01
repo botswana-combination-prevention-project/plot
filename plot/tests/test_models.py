@@ -21,6 +21,8 @@ from ..mommy_recipes import fake, get_utcnow
 from ..sync_models import sync_models
 
 from .mixins import PlotMixin
+from plot.constants import TWENTY_PERCENT
+from plot.exceptions import PlotCreateError
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
@@ -171,20 +173,67 @@ class TestPlot(PlotMixin, TestCase):
         plot.eligible_members = 5
         self.assertRaises(CreateHouseholdError, plot.save)
 
-    def test_inaccessible_plot_cannot_be_confirmed(self):
+    def test_inaccessible_plot_can_be_confirmed(self):
         plot = self.make_plot()
         self.make_plot_log_entry(plot=plot, log_status=INACCESSIBLE)
         plot = Plot.objects.get(pk=plot.pk)
-        self.assertRaises(
-            PlotConfirmationError, self.confirm_plot, plot)
-
-    def test_does_not_create_log_for_htc(self):
-        plot = self.make_plot(htc=True)
         try:
-            self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
-            self.fail('PlotLog.DoesNotExist not raised')
+            self.confirm_plot(plot)
+        except PlotConfirmationError:
+            self.fail('PlotConfirmationError unexpectedly raised')
+
+    def test_create_plot1(self):
+        """Assert rss is false if not a selected plot."""
+        plot = self.make_plot(selected=None)
+        self.assertFalse(plot.rss)
+
+    def test_create_plot2(self):
+        """Assert rss true if a selected plot."""
+        plot = self.make_plot(selected=TWENTY_PERCENT)
+        self.assertTrue(plot.rss)
+
+    def test_create_plot3(self):
+        """Assert can create plot for use by HTC outside of RSS."""
+        plot = self.make_plot(htc=True, selected=None)
+        self.assertTrue(plot.htc)
+
+    def test_create_plot4(self):
+        """Assert can create plot for use by HTC outside of RSS or in ESS."""
+        try:
+            self.make_plot(htc=True, selected=None, ess=True)
+        except PlotCreateError:
+            self.fail('PlotCreateError unexpectedly raised')
+
+    def test_create_plot5(self):
+        """Asserts cannot allocate new plot to both RSS and HTC."""
+        self.assertRaises(
+            PlotCreateError,
+            self.make_plot, htc=True, selected=TWENTY_PERCENT)
+
+    def test_create_plot6(self):
+        """Assert can set ESS true regardless."""
+        plot = self.make_plot(ess=True)
+        self.assertTrue(plot.ess)
+
+    @tag('me')
+    def test_does_not_create_log_for_htc_if_not_ess(self):
+        plot = self.make_plot(htc=True, selected=None)
+        self.assertTrue(plot.htc)
+        try:
+            self.make_plot_log_entry(plot=plot)
+            self.fail('PlotLog.DoesNotExist unexpcedtedly not raised')
         except PlotLog.DoesNotExist:
             pass
+
+    @tag('me')
+    def test_creates_log_for_htc_if_ess(self):
+        plot = self.make_plot(htc=True, selected=None, ess=True)
+        self.assertTrue(plot.htc)
+        self.assertTrue(plot.ess)
+        try:
+            self.make_plot_log_entry(plot=plot)
+        except PlotLog.DoesNotExist:
+            self.fail('PlotLog.DoesNotExist unexpectedly raised')
 
     def test_cannot_confirm_without_log(self):
         plot = self.make_plot()
@@ -238,14 +287,6 @@ class TestPlot(PlotMixin, TestCase):
         self.assertFalse(plot.accessible)
         plot_log_entry.delete()
         plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
-        self.assertTrue(plot.accessible)
-
-    def test_plot_resets_accessible_attr_if_no_logentry_and_not_htc(self):
-        plot = self.make_plot(htc=True)
-        self.assertFalse(plot.accessible)
-        plot.htc = False
-        plot.save()
-        plot = Plot.objects.get(pk=plot.pk)
         self.assertTrue(plot.accessible)
 
 

@@ -8,6 +8,7 @@ from edc_base_test.mixins.dates_test_mixin import DatesTestMixin
 from ..constants import ACCESSIBLE
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
+from plot.constants import RESIDENTIAL_HABITABLE
 
 
 class PlotMixin(DatesTestMixin):
@@ -19,10 +20,7 @@ class PlotMixin(DatesTestMixin):
             report_datetime=self.get_utcnow(),
             **options)
         self.assertFalse(plot.confirmed)
-        if plot.htc:
-            self.assertFalse(plot.accessible)
-        else:
-            self.assertTrue(plot.accessible)
+        self.assertTrue(plot.accessible)
         return plot
 
     def confirm_plot(self, plot, **options):
@@ -35,12 +33,15 @@ class PlotMixin(DatesTestMixin):
         return plot
 
     def make_confirmed_plot(self, **options):
-        """Make a accessible confirmed plot along with a plot log entry."""
+        """Make an accessible confirmed plot along with a plot log entry."""
         plot = self.make_plot()
         self.make_plot_log_entry(plot=plot, log_status=ACCESSIBLE)
         plot.gps_confirmed_latitude = options.get('gps_confirmed_latitude', fake.confirmed_latitude())
         plot.gps_confirmed_longitude = options.get('gps_confirmed_longitude', fake.confirmed_longitude())
         plot.household_count = options.get('household_count', 0)
+        plot.status = options.get('status', RESIDENTIAL_HABITABLE)
+        plot.time_of_day = 'mornings'
+        plot.time_of_week = 'weekdays'
         plot.save()
         plot = Plot.objects.get(pk=plot.pk)
         self.assertTrue(plot.confirmed)
