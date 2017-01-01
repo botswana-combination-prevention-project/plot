@@ -7,10 +7,16 @@ from .forms import PlotLogForm, PlotLogEntryForm, PlotForm
 from .models import Plot, PlotLogEntry, PlotLog
 
 from .modeladmin_mixins import ModelAdminMixin
+from edc_base.modeladmin_mixins import ModelAdminChangelistButtonMixin
 
 
 @admin.register(Plot, site=plot_admin)
 class PlotAdmin(ModelAdminMixin):
+
+    #     def get_form(self, request, obj=None, **kwargs):
+    #         if not obj:
+    #             kwargs['form'] = PlotAddForm
+    #         return super().get_form(request, obj, **kwargs)
 
     form = PlotForm
     date_hierarchy = 'modified'
@@ -21,19 +27,17 @@ class PlotAdmin(ModelAdminMixin):
                 ['plot_identifier', 'status', 'gps_confirmed_latitude', 'gps_confirmed_longitude',
                  'cso_number', 'household_count', 'eligible_members', 'time_of_week', 'time_of_day',
                  'description', 'comment']}),
-        ('Advanced options', {  # TODO: (selected field) is added temporarily to add plot manually. IT should be removed.
+        ('Advanced options', {
             'classes': ('collapse',),
-            'fields': ['location_name', 'htc', 'map_area', 'selected', 'gps_target_lat', 'gps_target_lon', 'target_radius',
+            'fields': ['location_name', 'map_area', 'gps_target_lat', 'gps_target_lon', 'target_radius',
                        ]}),
     )
 
     list_display = (
-        'plot_identifier', 'status', 'accessible', 'confirmed', 'htc', 'enrolled', 'household_count',
+        'plot_identifier', 'status', 'accessible', 'confirmed', 'rss', 'htc', 'ess', 'enrolled', 'household_count',
         'enrolled_datetime', 'eligible_members', 'modified', 'user_modified', 'hostname_modified')
 
-#     list_display = ('plot_identifier', 'community', 'action', 'status', 'access_attempts', 'bhs', 'htc',
-#                     'created', 'modified')
-    list_filter = ('accessible', 'confirmed', 'enrolled', 'htc', 'status', 'created', 'modified', 'map_area',
+    list_filter = ('accessible', 'confirmed', 'rss', 'htc', 'ess', 'enrolled', 'status', 'created', 'modified', 'map_area',
                    'access_attempts', 'hostname_modified',
                    'section', 'sub_section', 'selected', 'time_of_week', 'time_of_day')
 
@@ -44,23 +48,29 @@ class PlotAdmin(ModelAdminMixin):
         'status': admin.VERTICAL,
         'time_of_week': admin.VERTICAL,
         'time_of_day': admin.VERTICAL,
-        'selected': admin.VERTICAL,  # TODO: (selected field) is added temporarily to add plot manually.
     }
 
 
 @admin.register(PlotLogEntry, site=plot_admin)
-class PlotLogEntryAdmin(ModelAdminMixin):
+class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
     form = PlotLogEntryForm
     date_hierarchy = 'modified'
     fields = ('plot_log', 'report_datetime', 'log_status', 'reason', 'reason_other', 'comment')
     list_per_page = 15
-    list_display = ('plot_log', 'log_status', 'report_datetime')
+    list_display = ('plot_log', 'plots_button', 'log_status', 'report_datetime')
     list_filter = ('log_status', 'report_datetime', 'plot_log__plot__map_area', 'log_status')
     search_fields = ('log_status', 'plot_log__plot__map_area', 'plot_log__plot__plot_identifier')
     radio_fields = {
         'reason': admin.VERTICAL,
         'log_status': admin.VERTICAL
     }
+
+    def plots_button(self, obj):
+        return self.button(
+            'plot:list_url',
+            reverse_args=(obj.plot_log.plot.plot_identifier, ),
+            label='<i class="fa fa-building-o fa-lg"></i> plot')
+    plots_button.short_description = 'plot'
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "plot_log":
