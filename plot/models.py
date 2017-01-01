@@ -2,26 +2,26 @@
 
 import arrow
 
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
 
 from edc_base.model.models import BaseUuidModel, HistoricalRecords
+from edc_base.model.validators.date import datetime_not_future
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
-from edc_map.model_mixins import MapperModelMixin
-from edc_map.exceptions import MapperError
 from edc_device.model_mixins import DeviceModelMixin
-from edc_base.model.validators.date import datetime_not_future
+from edc_map.exceptions import MapperError
+from edc_map.model_mixins import MapperModelMixin
+from edc_map.site_mappers import site_mappers
 
-from .choices import PLOT_STATUS, SELECTED, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
+from .choices import PLOT_STATUS, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
+from .constants import INACCESSIBLE
 from .exceptions import PlotEnrollmentError
+from .managers import PlotManager, PlotLogManager, PlotLogEntryManager
 from .model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotEnrollmentMixin, PlotConfirmationMixin)
-from plot.constants import INACCESSIBLE
-from django.core.exceptions import MultipleObjectsReturned
-from plot.managers import PlotManager, PlotLogManager, PlotLogEntryManager
-from edc_map.site_mappers import site_mappers
 
 
 class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnrollmentMixin,
@@ -63,7 +63,9 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
     status = models.CharField(
         verbose_name='Plot status',
         max_length=35,
-        choices=PLOT_STATUS)
+        choices=PLOT_STATUS,
+        null=True,
+        blank=False)
 
     description = EncryptedTextField(
         verbose_name="Description of plot/residence",
@@ -76,15 +78,6 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
         max_length=250,
         blank=True,
         null=True)
-
-    selected = models.CharField(
-        max_length=25,
-        null=True,
-        verbose_name='selected',
-        choices=SELECTED,
-        editable=True,
-        help_text=(
-            "1=20% of selected plots, 2=additional 5% selected buffer/pool, None=75%"))
 
     accessible = models.BooleanField(
         default=True,
@@ -106,8 +99,6 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
         if self.id and not self.location_name:
             self.location_name = 'plot'
         if self.status == INACCESSIBLE:
-            self.accessible = False
-        elif self.htc:
             self.accessible = False
         else:
             if self.id:
@@ -167,7 +158,7 @@ class PlotLog(BaseUuidModel):
     objects = PlotLogManager()
 
     def __str__(self):
-        return str(self.plot)
+        return self.plot.plot_identifier
 
     def natural_key(self):
         return self.plot.natural_key()
@@ -184,6 +175,7 @@ class PlotLogEntry(BaseUuidModel):
 
     report_datetime = models.DateTimeField(
         verbose_name="Report date",
+        validators=[datetime_not_future],
         # TODO: get this validator to work
         # validators=[datetime_not_future, date_in_survey_for_map_area],
         default=get_utcnow)
@@ -236,5 +228,5 @@ class PlotLogEntry(BaseUuidModel):
 
     class Meta:
         app_label = 'plot'
-        unique_together = ('plot_log', 'report_date')
+        unique_together = ('plot_log', 'report_datetime')
         ordering = ('report_datetime', )
