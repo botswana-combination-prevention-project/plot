@@ -49,7 +49,7 @@
                               <a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}{% if not result.plot_log_entries %} disabled{% endif %}" href="{% url 'plot:plot_admin:plot_plot_change' result.plot.id %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}"><i class="fa fa-building-o fa-lg"></i> {{ result.plot.plot_identifier }} <i class="fa fa-pencil fa-sm"></i></a>
                               <a title="households" role="button" class="btn btn-sm btn-default{% if result.plot.household_count == 0 %} disabled{% endif %}" href="{% url 'household:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-home fa-lg"></i></a>
                               <a title="members" role="button" class="btn btn-sm btn-default{% if result.plot.household_count == 0 and result.plot.member_count == 0 %} disabled{% endif %}" href="{% url 'member:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-group fa-lg"></i></a>
-                          		<a title="map" role="button" class="btn btn-sm btn-default" href="#"><i class="fa fa-map-marker fa-lg"></i></a>
+                          		<a title="map" role="button" class="btn btn-sm btn-default" href="{% url 'plot:map_url' map_area=result.plot.map_area plot_identifier=result.plot.plot_identifier %}"><i class="fa fa-map-marker fa-lg"></i></a>
                             </td>
                             <!--status-->
                             <td>

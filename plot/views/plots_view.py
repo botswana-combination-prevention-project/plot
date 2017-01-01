@@ -12,8 +12,8 @@ from edc_base.view_mixins import EdcBaseViewMixin
 from edc_search.forms import SearchForm
 from edc_search.view_mixins import SearchViewMixin
 
-from .models import Plot, PlotLog, PlotLogEntry
-from plot.constants import RESIDENTIAL_HABITABLE
+from ..models import Plot, PlotLog, PlotLogEntry
+from ..constants import RESIDENTIAL_HABITABLE
 
 app_config = django_apps.get_app_config('plot')
 
