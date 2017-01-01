@@ -6,7 +6,6 @@ from django.dispatch import receiver
 
 from .models import Plot, PlotLog, PlotLogEntry
 from plot.constants import INACCESSIBLE, ACCESSIBLE
-from django.core.exceptions import MultipleObjectsReturned
 
 
 @receiver(post_save, weak=False, sender=Plot, dispatch_uid="create_households_on_post_save")
@@ -36,13 +35,17 @@ def update_plot_on_post_save(sender, instance, raw, created, using, **kwargs):
         plot.save()
 
 
-@receiver(post_delete, weak=False, sender=PlotLogEntry, dispatch_uid="update_plot_on_post_delete")
-def update_plot_on_post_delete(instance, using, **kwargs):
+@receiver(post_delete, weak=False, sender=PlotLogEntry,
+          dispatch_uid="update_plot_on_plot_log_entry_post_delete")
+def update_plot_on_plot_log_entry_post_delete(instance, using, **kwargs):
     plot = Plot.objects.get(pk=instance.plot_log.plot.pk)
-    try:
-        PlotLogEntry.objects.get(plot_log__plot=plot)
-    except PlotLogEntry.DoesNotExist:
+    plot.access_attempts = (plot.access_attempts or 0) - 1
+    plot.access_attempts = 0 if plot.access_attempts < 1 else plot.access_attempts
+    if plot.access_attempts == 0:
         plot.accessible = True
-    except MultipleObjectsReturned:
-        pass
+        plot.household_count = 0
+        plot.eligible_members = 0
+        plot.status = None
+        plot.time_of_day = None
+        plot.time_of_week = None
     plot.save()
