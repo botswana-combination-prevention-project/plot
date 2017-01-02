@@ -4,12 +4,12 @@ from django.apps import apps as django_apps
 from django.contrib import admin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.urlresolvers import reverse
+from django.utils.html import format_html
 
 from edc_base.views import EdcBaseViewMixin
 from edc_map.views import MapImageView
 
 from ..models import Plot
-from django.utils.html import format_html
 
 
 class LocationView(EdcBaseViewMixin, MapImageView):

@@ -8,7 +8,7 @@ from edc_base.modelform_mixins import CommonCleanModelFormMixin
 from edc_constants.utils import get_display
 
 from .choices import PLOT_STATUS
-from .constants import INACCESSIBLE, CONFIRMED, ACCESSIBLE, RESIDENTIAL_HABITABLE
+from .constants import INACCESSIBLE, ACCESSIBLE, RESIDENTIAL_HABITABLE
 from .models import Plot, PlotLog, PlotLogEntry
 
 
@@ -114,7 +114,7 @@ class PlotLogEntryForm(CommonCleanModelFormMixin, forms.ModelForm):
 #                                        exception_cls=forms.ValidationError)
         # confirm that an inaccessible log entry is not entered against a confirmed plot.
         status = cleaned_data.get('log_status')
-        if status == INACCESSIBLE and plot_log.plot.action == CONFIRMED:
+        if status == INACCESSIBLE and plot_log.plot.confirmed:
             raise forms.ValidationError(
                 {'accessible': 'This plot has been \'confirmed\'. Cannot be inaccessible.'})
         if status == ACCESSIBLE:
