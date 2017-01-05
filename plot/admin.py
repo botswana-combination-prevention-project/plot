@@ -93,13 +93,6 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
         if db_field.name == "plot_log":
             if request.GET.get('plot_log'):
                 kwargs["queryset"] = PlotLog.objects.filter(id__exact=request.GET.get('plot_log', 0))
-            else:
-                self.readonly_fields = list(self.readonly_fields)
-                try:
-                    self.readonly_fields.index('plot_log')
-                except ValueError:
-                    self.readonly_fields.append('plot_log')
-                self.readonly_fields = tuple(self.readonly_fields)
         return super(PlotLogEntryAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def view_on_site(self, obj):

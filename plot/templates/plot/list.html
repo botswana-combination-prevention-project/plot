@@ -46,23 +46,29 @@
                             <td>{{ forloop.counter }}</td>
                             <!--buttons-->
                             <td style="white-space: nowrap">
-                                <a title="Add log entry" role="button" class="btn btn-sm {% if result.plot_log_entry %}btn-default disabled{% else %}btn-warning{% endif %}" 
-                                  href="{% url 'plot:plot_admin:plot_plotlogentry_add' %}?plot_log={{result.plot_log.pk}}&next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}">
-                                    <i class="fa fa-plus fa-sm"></i> <i class="fa fa-file-o"></i></a>
                               <!--plot log entry history -->
                               <div class="btn-group">
-                                <button title = "Plot log history" type="button" class="btn btn-default btn-sm"><i class="fa fa-history fa-lg"></i> <i class="fa fa-files-o fa-lg"></i></button>
-                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"
-                                  href="{% url 'plot:plot_admin:plot_plotlogentry_changelist' %}?q={{ result.plot.plot_identifier }}">
-                                    <span class="caret"></span></button>
-                                    <ul class="dropdown-menu" role="menu">
-                                      {% for log_entry in result.plot_log_entries %}
-                                        <li><a href="{% url 'plot:plot_admin:plot_plotlogentry_change' log_entry.pk %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}">{{ log_entry.report_datetime }}</a></li>
-                                      {% endfor %}
-                                    </ul>
+                                <div class="btn-group">
+                                  <a title="Add plot log" type="button" class="btn {% if result.plot_log_entry %}btn-default disabled{% else %}btn-warning{% endif %} btn-sm dropdown-toggle"
+                                    href="{% url 'plot:plot_admin:plot_plotlogentry_add' %}?plot_log={{result.plot_log.pk}}&next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}">
+                                      <i class="fa fa-plus"></i>
+                                  </a>
+                                </div>
+                                <button title = "Plot logs" type="button" class="btn btn-default btn-sm">
+                                  <i class="fa fa-history fa-lg"></i> <i class="fa fa-files-o fa-lg"></i></button>
+                                <div class="btn-group">
+                                  <button title="History" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                                      <span class="caret"></span></button>
+                                      <ul class="dropdown-menu" role="menu">
+                                        <li class="dropdown-header">Plot logs</li>
+                                        {% for log_entry in result.plot_log_entries %}
+                                          <li><a href="{% url 'plot:plot_admin:plot_plotlogentry_change' log_entry.pk %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}&plot_log={{ log_entry.plot_log.id }}">{{ log_entry.report_datetime }}</a></li>
+                                        {% endfor %}
+                                      </ul>
+                                </div>
                               </div>
                               <!--end plot log entry history -->
-                              <a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}{% if not result.plot_log_entries %} disabled{% endif %}" href="{% url 'plot:plot_admin:plot_plot_change' result.plot.id %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}"><i class="fa fa-building-o fa-lg"></i> {{ result.plot.plot_identifier }} <i class="fa fa-pencil fa-sm"></i></a>
+                              <a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}{% if not result.plot_log_entry %} disabled{% endif %}" href="{% url 'plot:plot_admin:plot_plot_change' result.plot.id %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}"><i class="fa fa-building-o fa-lg"></i> {{ result.plot.plot_identifier }} <i class="fa fa-pencil fa-sm"></i></a>
                               <a title="households" role="button" class="btn btn-sm btn-default{% if result.plot.household_count == 0 %} disabled{% endif %}" href="{% url 'household:list_url' plot_identifier=result.plot.plot_identifier %}"> <i class="fa fa-home fa-lg"></i></a>
                           		<a title="map" role="button" class="btn btn-sm btn-default" href="{% url 'plot:map_url' map_area=result.plot.map_area plot_identifier=result.plot.plot_identifier %}"><i class="fa fa-map-marker fa-lg"></i></a>
                             </td>
@@ -88,6 +94,13 @@
                           </tr>
                         {% endfor %}
                       </tbody>
+                    </table>
+                    <table>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
                     </table>
                     {% include 'edc_search/paginator.html' %}
                   </div>

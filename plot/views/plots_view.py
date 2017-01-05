@@ -1,5 +1,3 @@
-import arrow
-
 from django.apps import apps as django_apps
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -12,10 +10,8 @@ from edc_base.view_mixins import EdcBaseViewMixin
 from edc_search.forms import SearchForm
 from edc_search.view_mixins import SearchViewMixin
 
-from ..models import Plot, PlotLog, PlotLogEntry
 from ..constants import RESIDENTIAL_HABITABLE
-from arrow.parser import ParserError
-from re import search
+from ..models import Plot, PlotLog, PlotLogEntry
 
 app_config = django_apps.get_app_config('plot')
 
@@ -32,7 +28,7 @@ class Result:
         self.plot = plot
         self.plot.community_name = ' '.join(self.plot.map_area.split('_'))
         self.plot_log = PlotLog.objects.get(plot=plot)
-        self.plot_log_entries = PlotLogEntry.objects.filter(plot_log__plot=plot)
+        self.plot_log_entries = PlotLogEntry.objects.filter(plot_log__plot=plot).order_by('-report_datetime')
         self.plot_log_entry = PlotLogEntry.objects.filter(
             plot_log__plot=plot,
             report_date=plot.modified.date()).order_by('report_datetime').last()
