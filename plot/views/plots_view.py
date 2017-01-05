@@ -14,6 +14,8 @@ from edc_search.view_mixins import SearchViewMixin
 
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..constants import RESIDENTIAL_HABITABLE
+from arrow.parser import ParserError
+from re import search
 
 app_config = django_apps.get_app_config('plot')
 
@@ -31,9 +33,9 @@ class Result:
         self.plot.community_name = ' '.join(self.plot.map_area.split('_'))
         self.plot_log = PlotLog.objects.get(plot=plot)
         self.plot_log_entries = PlotLogEntry.objects.filter(plot_log__plot=plot)
-        self.plot_log_entry_today = PlotLogEntry.objects.filter(
+        self.plot_log_entry = PlotLogEntry.objects.filter(
             plot_log__plot=plot,
-            report_date=arrow.utcnow().date()).order_by('report_datetime').last()
+            report_date=plot.modified.date()).order_by('report_datetime').last()
         self.plot_log_entry_link_html_class = "disabled" if plot.confirmed else "active"
         self.plot.member_count = HouseholdMember.objects.filter(
             household_structure__household__plot=self.plot).count()
@@ -54,16 +56,22 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
+    def search_options_for_date(self, search_term, **kwargs):
+        q, options = super().search_options_for_date(search_term, **kwargs)
+        q = q | Q(report_datetime__date=search_term.date())
+        return q, options
+
     def search_options(self, search_term, **kwargs):
-        q = (
-            Q(plot_identifier__icontains=search_term) |
-            Q(user_created__iexact=search_term) |
-            Q(user_modified__iexact=search_term))
-        options = {}
+        q, options = super().search_options(search_term, **kwargs)
+        if search_term.lower() == 'ess':
+            options = {'ess': True}
+            q = Q()
+        else:
+            q = q | Q(plot_identifier__icontains=search_term)
         return q, options
 
     def queryset_wrapper(self, qs):
-        """Override to wrap each instance in the paginated queryset in `Result`."""
+        """Override to wrap each plot instance in the paginated queryset."""
         results = []
         for obj in qs:
             results.append(Result(obj))

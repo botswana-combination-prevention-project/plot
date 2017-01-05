@@ -31,10 +31,10 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
             else:
                 if not cleaned_data.get('ess'):
                     raise forms.ValidationError(
-                        'Only ESS plots may be added.')
+                        'Only ESS plots may be added. See Categories.')
                 if cleaned_data.get('status') != RESIDENTIAL_HABITABLE:
                     raise forms.ValidationError(
-                        'Only plots that are {} may be added.'.format(
+                        'Only {} plots may be added.'.format(
                             get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE)))
         if self.instance.id:
             if cleaned_data.get('location_name') in app_config.special_locations:
@@ -62,7 +62,8 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
         cleaned_data = self.cleaned_data
         if cleaned_data.get('status') != RESIDENTIAL_HABITABLE and cleaned_data.get('eligible_members'):
             raise forms.ValidationError(
-                {'eligible_members': 'Must be zero if not {}'.format(RESIDENTIAL_HABITABLE)})
+                {'eligible_members': 'Must be zero if not {}'.format(
+                    get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE))})
         elif cleaned_data.get('eligible_members') and not cleaned_data.get('household_count'):
             raise forms.ValidationError(
                 {'eligible_members': 'Must be zero if no households'})
@@ -74,7 +75,8 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
                 {'household_count': 'Must be zero if no households'})
         elif cleaned_data.get('status') == RESIDENTIAL_HABITABLE and not cleaned_data.get('household_count'):
             raise forms.ValidationError(
-                {'household_count': 'May not be zero if {}'.format(RESIDENTIAL_HABITABLE)})
+                {'household_count': 'May not be zero if {}'.format(
+                    get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE))})
 
     def best_time_to_visit(self):
         """Raise if time of the day is not specified for eligible members.
