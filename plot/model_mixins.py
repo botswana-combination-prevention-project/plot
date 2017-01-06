@@ -118,7 +118,7 @@ class PlotEnrollmentMixin(models.Model):
                 raise PlotCreateError('Plot cannot be assigned to both HTC and RSS.')
         if self.ess and any([self.htc, self.rss, self.selected]):
             raise PlotEnrollmentError(
-                'Plot cannot be an ESS plot.')
+                'Plot cannot be an ESS plot. Check value of RSS, HTC or \'selected\'.')
         if self.htc and not self.ess and self.enrolled:
             raise PlotEnrollmentError(
                 'Plot cannot be enrolled. Got plot is assigned to HTC.')

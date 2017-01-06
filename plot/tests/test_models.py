@@ -198,11 +198,10 @@ class TestPlot(PlotMixin, TestCase):
         self.assertTrue(plot.htc)
 
     def test_create_plot4(self):
-        """Assert can create plot for use by HTC outside of RSS or in ESS."""
-        try:
-            self.make_plot(htc=True, selected=None, ess=True)
-        except PlotCreateError:
-            self.fail('PlotCreateError unexpectedly raised')
+        """Assert cannot create plot for use by HTC and ESS."""
+        self.assertRaises(
+            PlotEnrollmentError,
+            self.make_plot, htc=True, selected=None, ess=True)
 
     def test_create_plot5(self):
         """Asserts cannot allocate new plot to both RSS and HTC."""
@@ -215,7 +214,6 @@ class TestPlot(PlotMixin, TestCase):
         plot = self.make_plot(ess=True)
         self.assertTrue(plot.ess)
 
-    @tag('me')
     def test_does_not_create_log_for_htc_if_not_ess(self):
         plot = self.make_plot(htc=True, selected=None)
         self.assertTrue(plot.htc)
@@ -224,16 +222,6 @@ class TestPlot(PlotMixin, TestCase):
             self.fail('PlotLog.DoesNotExist unexpcedtedly not raised')
         except PlotLog.DoesNotExist:
             pass
-
-    @tag('me')
-    def test_creates_log_for_htc_if_ess(self):
-        plot = self.make_plot(htc=True, selected=None, ess=True)
-        self.assertTrue(plot.htc)
-        self.assertTrue(plot.ess)
-        try:
-            self.make_plot_log_entry(plot=plot)
-        except PlotLog.DoesNotExist:
-            self.fail('PlotLog.DoesNotExist unexpectedly raised')
 
     def test_cannot_confirm_without_log(self):
         plot = self.make_plot()

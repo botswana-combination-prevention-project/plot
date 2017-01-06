@@ -11,7 +11,10 @@ from edc_search.forms import SearchForm
 from edc_search.view_mixins import SearchViewMixin
 
 from ..constants import RESIDENTIAL_HABITABLE
-from ..models import Plot, PlotLog, PlotLogEntry
+from ..models import Plot
+
+from .result_wrapper import ResultWrapper
+
 
 app_config = django_apps.get_app_config('plot')
 
@@ -22,20 +25,8 @@ class SearchPlotForm(SearchForm):
         self.helper.form_action = reverse('plot:list_url')
 
 
-class Result:
-    def __init__(self, plot):
-        HouseholdMember = django_apps.get_model(*'member.householdmember'.split('.'))
-        self.plot = plot
-        self.plot.community_name = ' '.join(self.plot.map_area.split('_'))
-        self.plot_log = PlotLog.objects.get(plot=plot)
-        self.plot_log_entries = PlotLogEntry.objects.filter(plot_log__plot=plot).order_by('-report_datetime')
-        self.plot_log_entry = PlotLogEntry.objects.filter(
-            plot_log__plot=plot,
-            report_date=plot.modified.date()).order_by('report_datetime').last()
-        self.plot_log_entry_link_html_class = "disabled" if plot.confirmed else "active"
-        self.plot.member_count = HouseholdMember.objects.filter(
-            household_structure__household__plot=self.plot).count()
-        self.excluded_plot = app_config.excluded_plot(plot)
+class PlotResultWrapper(ResultWrapper):
+    pass
 
 
 class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
@@ -70,7 +61,7 @@ class PlotsView(EdcBaseViewMixin, TemplateView, SearchViewMixin, FormView):
         """Override to wrap each plot instance in the paginated queryset."""
         results = []
         for obj in qs:
-            results.append(Result(obj))
+            results.append(PlotResultWrapper(obj))
         return results
 
     def get_context_data(self, **kwargs):

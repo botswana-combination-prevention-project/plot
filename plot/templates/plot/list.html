@@ -47,25 +47,11 @@
                             <!--buttons-->
                             <td style="white-space: nowrap">
                               <!--plot log entry history -->
-                              <div class="btn-group">
-                                <div class="btn-group">
-                                  <a title="Add plot log" type="button" class="btn {% if result.plot_log_entry %}btn-default disabled{% else %}btn-warning{% endif %} btn-sm dropdown-toggle"
-                                    href="{% url 'plot:plot_admin:plot_plotlogentry_add' %}?plot_log={{result.plot_log.pk}}&next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}">
-                                      <i class="fa fa-plus"></i>
-                                  </a>
-                                </div>
-                                <button title = "Plot logs" type="button" class="btn btn-default btn-sm">
-                                  <i class="fa fa-history fa-lg"></i> <i class="fa fa-files-o fa-lg"></i></button>
-                                <div class="btn-group">
-                                  <button title="History" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-                                      <span class="caret"></span></button>
-                                      <ul class="dropdown-menu" role="menu">
-                                        <li class="dropdown-header">Plot logs</li>
-                                        {% for log_entry in result.plot_log_entries %}
-                                          <li><a href="{% url 'plot:plot_admin:plot_plotlogentry_change' log_entry.pk %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}&plot_log={{ log_entry.plot_log.id }}">{{ log_entry.report_datetime }}</a></li>
-                                        {% endfor %}
-                                      </ul>
-                                </div>
+
+                                {% with history_objects=result.plot_log_entries title="Plot logs" current_history_object=result.plot_log_entry add_button=True %}
+                                  {% include 'edc_base/controls/history_button.html' %}
+                                {% endwith %}
+
                               </div>
                               <!--end plot log entry history -->
                               <a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}{% if not result.plot_log_entry %} disabled{% endif %}" href="{% url 'plot:plot_admin:plot_plot_change' result.plot.id %}?next=plot:list_url,plot_identifier&plot_identifier={{ result.plot.plot_identifier }}"><i class="fa fa-building-o fa-lg"></i> {{ result.plot.plot_identifier }} <i class="fa fa-pencil fa-sm"></i></a>

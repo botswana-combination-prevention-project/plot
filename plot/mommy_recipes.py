@@ -40,6 +40,9 @@ plot = Recipe(
     selected=None,
     gps_target_lat=fake.target_latitude,
     gps_target_lon=fake.target_longitude,
+    ess=False,
+    rss=False,
+    htc=False,
 )
 
 plotlog = Recipe(

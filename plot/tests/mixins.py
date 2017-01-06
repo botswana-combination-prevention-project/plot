@@ -5,10 +5,9 @@ from model_mommy import mommy
 
 from edc_base_test.mixins.dates_test_mixin import DatesTestMixin
 
-from ..constants import ACCESSIBLE
+from ..constants import ACCESSIBLE, RESIDENTIAL_HABITABLE
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
-from plot.constants import RESIDENTIAL_HABITABLE
 
 
 class PlotMixin(DatesTestMixin):
