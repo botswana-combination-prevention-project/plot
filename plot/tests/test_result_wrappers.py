@@ -11,4 +11,6 @@ class TestWrappers(PlotMixin, TestCase):
         plot = self.make_confirmed_plot()
         wrapped = PlotResultWrapper(plot)
         self.assertEqual(wrapped.plot_identifier, plot.plot_identifier)
-        self.assertIsNotNone(wrapped.household_log)
+        self.assertIsNotNone(wrapped.plot_log)
+        self.assertIsNotNone(wrapped.plot_log_entry)
+        self.assertIsNotNone(wrapped.plot_log_entries)
