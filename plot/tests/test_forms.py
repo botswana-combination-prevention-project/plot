@@ -85,7 +85,7 @@ class TestForms(PlotMixin, TestCase):
                 plot_log=plot_log.id,
                 report_datetime=self.get_utcnow(),
                 log_status=ACCESSIBLE))
-        self.assertTrue(form.is_valid())  # FIXME: fails because of audit fields
+        self.assertTrue(form.is_valid())
 
     def test_attempt_to_add_many_plot_log_entry_per_day(self):
         """Attempt to add more than one plot log entry in a day."""
@@ -107,5 +107,4 @@ class TestForms(PlotMixin, TestCase):
                 plot_log=plot_log.id,
                 report_datetime=plot_log_entry.report_datetime,
                 log_status=plot_log_entry.log_status))
-        self.assertTrue(form.is_valid())
-        form.save()
+        self.assertFalse(form.is_valid())
