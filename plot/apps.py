@@ -26,7 +26,10 @@ class Enrollment:
 
 class AppConfig(DjangoAppConfig):
     name = 'plot'
-    list_template_name = None
+    listboard_template_name = 'plot/listboard.html'
+    listboard_url_name = 'plot:listboard_url'
+    url_namespace = 'plot'
+    admin_site_name = 'plot_admin'
     enrollment = Enrollment(
         timezone.now() - relativedelta(years=1),
         timezone.now() + relativedelta(years=1))

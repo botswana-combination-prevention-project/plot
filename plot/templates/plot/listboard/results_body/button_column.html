@@ -1,0 +1,27 @@
+
+<!-- begin button column -->
+
+<td style="white-space: nowrap">
+
+{% with history_objects=result.log_entry_set title="Plot logs" history_object=result.log_entry add_button=True %}
+  {% include 'edc_dashboard/controls/history_button.html' %}
+{% endwith %}
+
+<a title="change plot" role="button" class="btn btn-sm {% if result.plot.confirmed %}btn-success{%else%}btn-default{%endif%}{% if not result.log_entry %} disabled{% endif %}"
+  href="{% url result.plot.change_url_name result.plot.id %}?next={{ result.plot.next_url }}&{{ result.extra_querystring }}">
+    <i class="fa fa-building-o fa-lg"></i> {{ result.plot.plot_identifier }} <i class="fa fa-pencil fa-sm"></i>
+</a>
+
+<a title="households" role="button" class="btn btn-sm btn-default{% if result.plot.household_count == 0 or result.log_entry_set.count == 0 %} disabled{% endif %}"
+  href="{% url household_listboard_url_name plot_identifier=result.plot_identifier %}">
+    <i class="fa fa-home fa-lg"></i>
+</a>
+
+<a title="map" role="button" class="btn btn-sm btn-default"
+  href="{% url map_url_name map_area=result.plot.map_area plot_identifier=result.plot_identifier %}">
+    <i class="fa fa-map-marker fa-lg"></i>
+</a>
+
+</td>
+
+<!-- end button column -->

@@ -1,0 +1,66 @@
+{% load tz %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+<div class="container">
+   <div class="row">
+      <div class="col-md-12">
+        <div class="panel-group">
+          <div class="panel panel-info">
+            <div class="panel-heading clearfix">
+              <div class="container-fluid"><i class="fa fa-building fa-lg"></i>
+
+
+              {% include 'plot/listboard/add_plot_button.html' %}
+
+              {% include 'plot/listboard/filters.html' %}
+
+               {% include 'edc_search/search_form.html' %}
+
+            </div></div>
+            <div class="panel-body">
+
+              <!--start results-->
+
+              {% if results %}
+                  <div class="table table-responsive">
+                    <table class="table table-condensed table-hover small">
+                      <thead>
+
+                        {% include 'plot/listboard/results_header.html' %}
+
+                      </thead>
+                      <tbody>
+
+                        {% include 'plot/listboard/results_body.html' %}
+
+                      </tbody>
+                    </table>
+
+
+                    <!-- begin spacer rows -->
+
+                    <table>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr><td>&nbsp;</td></tr>
+                    </table>
+
+                    <!-- end spacer rows -->
+
+                    {% include 'edc_dashboard/paginator.html' %}
+
+                  </div>
+
+              {% endif %}
+
+              <!--end results-->
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> 
+  </div>

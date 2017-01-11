@@ -60,7 +60,7 @@ class PlotAdmin(ModelAdminMixin):
 
     def view_on_site(self, obj):
         return reverse(
-            'plot:list_url', kwargs=dict(plot_identifier=obj.plot_identifier))
+            'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_identifier))
 
 
 @admin.register(PlotLogEntry, site=plot_admin)
@@ -84,7 +84,7 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
 
     def plots_button(self, obj):
         return self.button(
-            'plot:list_url',
+            'plot:listboard_url',
             reverse_args=(obj.plot_log.plot.plot_identifier, ),
             label='<i class="fa fa-building-o fa-lg"></i> plot')
     plots_button.short_description = 'plot'
@@ -97,7 +97,7 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
 
     def view_on_site(self, obj):
         return reverse(
-            'plot:list_url', kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
+            'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
 
 
 @admin.register(PlotLog, site=plot_admin)
