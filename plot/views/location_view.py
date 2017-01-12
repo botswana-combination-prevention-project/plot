@@ -2,8 +2,10 @@ import json
 
 from django.apps import apps as django_apps
 from django.contrib import admin
+from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.urlresolvers import reverse
+from django.utils.decorators import method_decorator
 from django.utils.html import format_html
 
 from edc_base.views import EdcBaseViewMixin
@@ -19,6 +21,10 @@ class LocationView(EdcBaseViewMixin, MapImageView):
     filename_field = 'plot_identifier'
     zoom_levels = django_apps.get_app_config('edc_map').zoom_levels
     map_image_view_base_html = 'bcpp/base.html'
+
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def point(self, obj):
         if obj.confirmed:
