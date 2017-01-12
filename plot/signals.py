@@ -8,8 +8,8 @@ from .models import Plot, PlotLog, PlotLogEntry
 from plot.constants import INACCESSIBLE, ACCESSIBLE
 
 
-@receiver(post_save, weak=False, sender=Plot, dispatch_uid="create_households_on_post_save")
-def create_households_on_post_save(sender, instance, raw, created, using, **kwargs):
+@receiver(post_save, weak=False, sender=Plot, dispatch_uid="plot_creates_households_on_post_save")
+def plot_creates_households_on_post_save(sender, instance, raw, created, using, **kwargs):
     if not raw:
         instance.create_or_delete_households()
         if created:

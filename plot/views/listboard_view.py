@@ -48,6 +48,7 @@ class ListBoardView(EdcBaseViewMixin, ListboardMixin, FilteredListViewMixin, Sea
         context.update(
             navbar_selected='plot',
             RESIDENTIAL_HABITABLE=RESIDENTIAL_HABITABLE,
-            household_listboard_url_name=django_apps.get_app_config('household').listboard_url_name,
-            map_url_name='plot:map_url')
+            household_listboard_url_name=django_apps.get_app_config(
+                'household').listboard_url_name,
+            map_url_name=app_config.map_url_name)
         return context
