@@ -235,6 +235,8 @@ class CreateHouseholdsModelMixin(models.Model):
                                 Household.objects.create(plot=self, household_sequence=n)
                             except IntegrityError:
                                 pass
+            self.household_count = Household.objects.filter(plot__id=self.id).count()
+            self.save(update_fields=['household_count'])
 
     def safe_delete(self, household):
         """Safe delete households passing on ProtectedErrors."""

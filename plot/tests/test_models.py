@@ -92,7 +92,6 @@ class TestPlot(PlotMixin, TestCase):
         plot = self.make_confirmed_plot(household_count=3)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 3)
 
-    @tag('me3')
     def test_plot_add_subtract_household(self):
         """Assert change number of households will delete and recreate."""
         plot = self.make_confirmed_plot(household_count=3)

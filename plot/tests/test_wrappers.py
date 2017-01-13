@@ -51,7 +51,6 @@ class TestWrappers(PlotMixin, TestCase):
         self.assertIsNotNone(wrapped.plot.add_url_name)
         self.assertIsNotNone(wrapped.plot.change_url_name)
 
-    @tag('me3')
     def test_plot_wrapper_reverses_urls(self):
         wrapped = PlotWithLogEntryWrapper(self.plot)
         url_name = wrapped.plot.add_url_name.split('plot:')[1]

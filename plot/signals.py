@@ -9,8 +9,8 @@ from plot.constants import INACCESSIBLE, ACCESSIBLE
 
 
 @receiver(post_save, weak=False, sender=Plot, dispatch_uid="plot_creates_households_on_post_save")
-def plot_creates_households_on_post_save(sender, instance, raw, created, using, **kwargs):
-    if not raw:
+def plot_creates_households_on_post_save(sender, instance, raw, created, using, update_fields, **kwargs):
+    if not raw and not update_fields:
         instance.create_or_delete_households()
         if created:
             app_config = django_apps.get_app_config('plot')
