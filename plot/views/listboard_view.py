@@ -1,60 +1,26 @@
-from django.apps import apps as django_apps
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
 from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView, FormView
 
 from edc_base.view_mixins import EdcBaseViewMixin
-from edc_dashboard.view_mixins import ListboardMixin, FilteredListViewMixin
-from edc_search.view_mixins import SearchViewMixin
+from edc_dashboard.view_mixins import ListboardViewMixin
 
 from ..constants import RESIDENTIAL_HABITABLE
-from ..models import Plot
 
-from .wrappers import PlotWithLogEntryWrapper
-
-app_config = django_apps.get_app_config('plot')
+from .listboard_mixins import PlotSearchViewMixin, PlotFilteredListViewMixin, PlotAppConfigViewMixin
 
 
-class ListBoardView(EdcBaseViewMixin, ListboardMixin, FilteredListViewMixin, SearchViewMixin):
+class ListBoardView(EdcBaseViewMixin, ListboardViewMixin, PlotAppConfigViewMixin,
+                    PlotFilteredListViewMixin, PlotSearchViewMixin, TemplateView, FormView):
 
-    template_name = app_config.listboard_template_name
-    listboard_url_name = app_config.listboard_url_name
-
-    search_model = Plot
-    search_model_wrapper_class = PlotWithLogEntryWrapper
-    search_queryset_ordering = '-modified'
-
-    filter_model = Plot
-    filtered_model_wrapper_class = PlotWithLogEntryWrapper
-    filtered_queryset_ordering = '-modified'
-    url_lookup_parameters = ['id', 'plot_identifier']
+    app_config_name = 'plot'
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-    def search_options_for_date(self, search_term, **kwargs):
-        """Adds report_datetime to search by date."""
-        q, options = super().search_options_for_date(search_term, **kwargs)
-        q = q | Q(report_datetime__date=search_term.date())
-        return q, options
-
-    def search_options(self, search_term, **kwargs):
-        """Adds `ESS` as a special keyword in search."""
-        q, options = super().search_options(search_term, **kwargs)
-        if search_term.lower() == 'ess':
-            options = {'ess': True}
-            q = Q()
-        else:
-            q = q | Q(plot_identifier__icontains=search_term)
-        return q, options
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
-            navbar_selected='plot',
-            RESIDENTIAL_HABITABLE=RESIDENTIAL_HABITABLE,
-            household_listboard_url_name=django_apps.get_app_config(
-                'household').listboard_url_name,
-            map_url_name=app_config.map_url_name)
+            RESIDENTIAL_HABITABLE=RESIDENTIAL_HABITABLE)
         return context

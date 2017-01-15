@@ -27,6 +27,7 @@ class TestPlotCreatePermissions(PlotMixin, TestCase):
     """Assert permissions / roles that can create plots."""
 
     def setUp(self):
+        super().setUp()
         django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
 
     @override_settings(DEVICE_ID='99')
@@ -78,6 +79,7 @@ class TestPlotCreateCommunity(TestCase):
 class TestPlot(PlotMixin, TestCase):
 
     def setUp(self):
+        super().setUp()
         django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
 
     def test_datetime(self):

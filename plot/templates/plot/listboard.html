@@ -1,7 +1,10 @@
+{% extends base_template_name %}
+
 {% load tz %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block main %}
 <div class="container">
    <div class="row">
       <div class="col-md-12">
@@ -64,3 +67,5 @@
       </div>
     </div> 
   </div>
+
+{% endblock main %}

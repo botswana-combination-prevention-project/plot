@@ -1,1 +1,1 @@
-from .mixins import PlotMixin
+from .plot_test_mixin import PlotTestMixin

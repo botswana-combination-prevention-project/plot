@@ -15,10 +15,12 @@ from .mixins import PlotMixin
 class TestFormsNoAdd(PlotMixin, TestCase):
 
     def setUp(self):
+        super().setUp()
         self.add_plot_map_areas = django_apps.app_configs['plot'].add_plot_map_areas
         django_apps.app_configs['plot'].add_plot_map_areas = []
 
     def tearDown(self):
+        super().tearDown()
         django_apps.app_configs['plot'].add_plot_map_areas = self.add_plot_map_areas
 
     def test_cannot_add_plot_form_if_not_allowed(self):
