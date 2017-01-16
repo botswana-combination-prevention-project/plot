@@ -55,8 +55,8 @@ class PlotAdmin(ModelAdminMixin):
         'plot_identifier', 'cso_number', 'map_area', 'section', 'status', 'id') + audit_fields
 
     def get_readonly_fields(self, request, obj=None):
-        return super().get_readonly_fields(request, obj=obj) + [
-            'plot_identifier', 'htc', 'rss', 'selected', 'enrolled', 'enrolled_datetime']
+        return super().get_readonly_fields(request, obj=obj) + (
+            'plot_identifier', 'htc', 'rss', 'selected', 'enrolled', 'enrolled_datetime')
 
     def view_on_site(self, obj):
         return reverse(
