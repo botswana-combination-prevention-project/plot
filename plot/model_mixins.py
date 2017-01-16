@@ -31,10 +31,10 @@ class PlotIdentifier(ResearchIdentifier):
 class PlotConfirmationMixin(models.Model):
 
     def common_clean(self):
-        if not self.id and (self.gps_confirmed_latitude or self.gps_confirmed_longitude):
-            if not self.ess:
+        if not self.id:
+            if (self.gps_confirmed_latitude or self.gps_confirmed_longitude) and not self.ess:
                 raise PlotConfirmationError('Blocking attempt to confirm non-ESS plot on add.')
-        if self.id:
+        else:
             if self.gps_confirmed_latitude and self.gps_confirmed_longitude:
                 self.get_confirmed()
                 try:

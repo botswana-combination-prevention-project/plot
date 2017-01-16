@@ -15,7 +15,11 @@ def plot_creates_households_on_post_save(sender, instance, raw, created, using, 
         if created:
             app_config = django_apps.get_app_config('plot')
             if not app_config.excluded_plot(instance):
-                PlotLog.objects.create(plot=instance)
+                plot_log = PlotLog.objects.create(plot=instance)
+                if instance.ess:
+                    PlotLogEntry.objects.create(
+                        plot_log=plot_log,
+                        log_status=ACCESSIBLE)
 
 
 @receiver(post_save, weak=False, sender=PlotLogEntry, dispatch_uid="update_plot_on_post_save")

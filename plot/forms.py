@@ -36,7 +36,7 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
                     raise forms.ValidationError(
                         'Only {} plots may be added.'.format(
                             get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE)))
-        if self.instance.id:
+        else:
             if cleaned_data.get('location_name') in app_config.special_locations:
                 raise forms.ValidationError(
                     'Plot may not be changed by a user. Plot location name == \'{}\''.format(
