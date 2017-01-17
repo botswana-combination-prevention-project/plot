@@ -1,5 +1,5 @@
 
-{% for result in results %}
+{% for wrapper in results %}
   <!-- result is a ModelWithLogEntry wrapper -->
   <tr>
     <!--counter-->
@@ -8,14 +8,10 @@
 
       {% include 'plot/listboard/results/button_column.html' %}
 
-
       {% include 'plot/listboard/results/columns.html' %}
 
-      {% with object=result.plot %}
+      {% include 'plot/listboard/results/audit_columns.html' %}
 
-        {% include 'plot/listboard/results/audit_columns.html' %}
-
-      {% endwith %}
   </tr>
 
 {% endfor %}

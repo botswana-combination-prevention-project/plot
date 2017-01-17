@@ -29,7 +29,7 @@ class AppConfig(DjangoAppConfig):
     listboard_template_name = 'plot/listboard.html'
     listboard_url_name = 'plot:listboard_url'
     base_template_name = 'edc_base/base.html'
-    url_namespace = 'plot'
+    url_namespace = 'plot'  # FIXME: is this still neeed??
     admin_site_name = 'plot_admin'
     enrollment = Enrollment(
         timezone.now() - relativedelta(years=1),

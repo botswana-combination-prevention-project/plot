@@ -36,33 +36,11 @@ class TestWrappers(PlotMixin, TestCase):
         self.assertEqual(self.plot.plotlog.plotlogentry_set.all().count(), 1)
         self.assertEqual(len(wrapped.log_entry_set), 1)
 
-    def test_plot_wrapper_log_urls(self):
-        wrapped = PlotWithLogEntryWrapper(self.plot)
-        self.assertIsNotNone(wrapped.log_entry.add_url_name)
-        self.assertIsNotNone(wrapped.log_entry.change_url_name)
-
     def test_plot_wrapper_next_urls(self):
         wrapped = PlotWithLogEntryWrapper(self.plot)
         self.assertIsNotNone(wrapped.log_entry.next_url)
         self.assertIsNotNone(wrapped.log_entry.extra_querystring)
 
-    def test_plot_wrapper_urls(self):
-        wrapped = PlotWithLogEntryWrapper(self.plot)
-        self.assertIsNotNone(wrapped.plot.add_url_name)
-        self.assertIsNotNone(wrapped.plot.change_url_name)
-
-    def test_plot_wrapper_reverses_urls(self):
-        wrapped = PlotWithLogEntryWrapper(self.plot)
-        url_name = wrapped.plot.add_url_name.split('plot:')[1]
-        reverse(url_name)
-        self.assertIsNotNone(wrapped.plot.change_url_name)
-        url_name = wrapped.plot.change_url_name.split('plot:')[1]
-        reverse(url_name, args=(wrapped.plot.id,))
-
-    def test_plot_wrapper_reverses_add_log_urls(self):
-        wrapped = PlotWithLogEntryWrapper(self.plot)
-        url_name = wrapped.log_entry.add_url_name.split('plot:')[1]
-        reverse(url_name)
 
     def test_does_not_wrap_empty_objects(self):
         class TestEmpty:
@@ -90,8 +68,6 @@ class TestWrappers(PlotMixin, TestCase):
         self.plot.plotlog.plotlogentry_set.all().delete()
         wrapped = PlotWithLogEntryWrapper(self.plot)
         self.assertIsNotNone(wrapped.log_entry)
-        self.assertEqual(wrapped.log_entry.add_url_name, 'plot:plot_admin:plot_plotlogentry_add')
-        self.assertEqual(wrapped.log_entry.change_url_name, 'plot:plot_admin:plot_plotlogentry_change')
         self.assertEqual(
             wrapped.log_entry.next_url,
             'plot:listboard_url,plot_identifier&plot_identifier={}'.format(self.plot.plot_identifier))
@@ -102,8 +78,6 @@ class TestWrappers(PlotMixin, TestCase):
     def test_log_entry_has_attrs(self):
         wrapped = PlotWithLogEntryWrapper(self.plot)
         self.assertIsNotNone(wrapped.log_entry)
-        self.assertEqual(wrapped.log_entry.add_url_name, 'plot:plot_admin:plot_plotlogentry_add')
-        self.assertEqual(wrapped.log_entry.change_url_name, 'plot:plot_admin:plot_plotlogentry_change')
         self.assertEqual(
             wrapped.log_entry.extra_querystring,
             'plot_log={}'.format(self.plot.plotlog.pk))

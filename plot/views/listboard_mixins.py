@@ -6,7 +6,7 @@ from edc_search.view_mixins import SearchViewMixin
 
 from ..models import Plot
 
-from .wrappers import PlotWithLogEntryWrapper
+from .wrappers import PlotWithLogEntryModelWrapper
 
 
 class PlotAppConfigViewMixin(AppConfigViewMixin):
@@ -16,8 +16,6 @@ class PlotAppConfigViewMixin(AppConfigViewMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
-            plot_listboard_url_name=django_apps.get_app_config('plot').listboard_url_name,
-            household_listboard_url_name=django_apps.get_app_config('household').listboard_url_name,
             map_url_name=django_apps.get_app_config('plot').map_url_name,
         )
         return context
@@ -26,7 +24,7 @@ class PlotAppConfigViewMixin(AppConfigViewMixin):
 class PlotSearchViewMixin(SearchViewMixin):
 
     search_model = Plot
-    search_model_wrapper_class = PlotWithLogEntryWrapper
+    search_model_wrapper_class = PlotWithLogEntryModelWrapper
     search_queryset_ordering = '-modified'
 
     def search_options_for_date(self, search_term, **kwargs):
@@ -49,6 +47,6 @@ class PlotSearchViewMixin(SearchViewMixin):
 class PlotFilteredListViewMixin(FilteredListViewMixin):
 
     filter_model = Plot
-    filtered_model_wrapper_class = PlotWithLogEntryWrapper
+    filtered_model_wrapper_class = PlotWithLogEntryModelWrapper
     filtered_queryset_ordering = '-modified'
     url_lookup_parameters = ['id', 'plot_identifier']

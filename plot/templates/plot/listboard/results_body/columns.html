@@ -3,19 +3,19 @@
 
     <!--status-->
     <td>
-      {% if result.plot.confirmed %}<span class="label label-info label-sm">confirmed</span>{% else %}<span class="label label-warning label-sm">unconfirmed</span>{% endif %}
-      {% if result.plot.status %}<span class="label label-{% if result.plot.status == RESIDENTIAL_HABITABLE %}info{% else %}default{% endif %} label-sm">{{ result.plot.get_status_display }}</span>{% endif %}
+      {% if wrapper.plot.confirmed %}<span class="label label-info label-sm">confirmed</span>{% else %}<span class="label label-warning label-sm">unconfirmed</span>{% endif %}
+      {% if wrapper.plot.status %}<span class="label label-{% if wrapper.plot.status == RESIDENTIAL_HABITABLE %}info{% else %}default{% endif %} label-sm">{{ wrapper.plot.get_status_display }}</span>{% endif %}
     </td>
-    <td>{% if result.plot.access_attempts != 0 %}{{result.plot.access_attempts}}{% endif %}</td>
+    <td>{% if wrapper.plot.access_attempts != 0 %}{{wrapper.plot.access_attempts}}{% endif %}</td>
     <!--type-->
     <td>
-      {% if result.plot.ess %}<span class="label label-info label-sm">ESS</span>{% endif %}
-      {% if result.plot.rss %}<span class="label label-info label-sm">RSS</span>{% endif %}
-      {% if result.plot.htc and result.excluded_plot %}<span class="label label-error label-sm">HTC</span>{% endif %}
-      {% if result.plot.htc and not result.excluded_plot %}<span class="label label-info label-sm">HTC</span>{% endif %}
-      {% if result.excluded_plot %}<span class="label label-error label-sm">excluded</span>{% endif %}
+      {% if wrapper.plot.ess %}<span class="label label-info label-sm">ESS</span>{% endif %}
+      {% if wrapper.plot.rss %}<span class="label label-info label-sm">RSS</span>{% endif %}
+      {% if wrapper.plot.htc and wrapper.excluded_plot %}<span class="label label-error label-sm">HTC</span>{% endif %}
+      {% if wrapper.plot.htc and not wrapper.excluded_plot %}<span class="label label-info label-sm">HTC</span>{% endif %}
+      {% if wrapper.excluded_plot %}<span class="label label-error label-sm">excluded</span>{% endif %}
     </td>
     <!--estimate-->
-    <td>{% if result.log_entry_set %}{{ result.plot.household_count }} <i class="fa fa-home fa-sm"></i> {{ result.plot.eligible_members }} <i class="fa fa-group fa-sm"></i>{% endif %}</td>
+    <td>{% if wrapper.log_entry_set %}{{ wrapper.plot.household_count }} <i class="fa fa-home fa-sm"></i> {{ wrapper.plot.eligible_members }} <i class="fa fa-group fa-sm"></i>{% endif %}</td>
 
 <!-- end columns -->
