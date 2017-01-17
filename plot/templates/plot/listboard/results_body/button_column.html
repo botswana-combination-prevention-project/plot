@@ -3,7 +3,7 @@
 
 <td style="white-space: nowrap">
 
-	{% with history_objects=wrapped.log_entry_set title="Plot logs" history_object=wrapped.log_entry add_button=True %}
+	{% with history_objects=wrapped.log_entries title="Plot logs" history_object=wrapped.log_entry add_button=True %}
 	  {% include 'edc_dashboard/controls/history_button.html' %}
 	{% endwith %}
 
