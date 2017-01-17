@@ -129,9 +129,7 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnr
 
     @property
     def common_clean_exceptions(self):
-        common_clean_exceptions = super().common_clean_exceptions
-        common_clean_exceptions.extend([PlotEnrollmentError, MapperError])
-        return common_clean_exceptions
+        return super().common_clean_exceptions + [PlotEnrollmentError, MapperError]
 
     @property
     def identifier_segment(self):

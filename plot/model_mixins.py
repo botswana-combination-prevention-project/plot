@@ -65,9 +65,7 @@ class PlotConfirmationMixin(models.Model):
 
     @property
     def common_clean_exceptions(self):
-        common_clean_exceptions = super().common_clean_exceptions
-        common_clean_exceptions.extend([PlotConfirmationError])
-        return common_clean_exceptions
+        return super().common_clean_exceptions + [PlotConfirmationError]
 
     class Meta:
         abstract = True
@@ -128,9 +126,7 @@ class PlotEnrollmentMixin(models.Model):
 
     @property
     def common_clean_exceptions(self):
-        common_clean_exceptions = super().common_clean_exceptions
-        common_clean_exceptions.extend([PlotEnrollmentError, PlotCreateError])
-        return common_clean_exceptions
+        return super().common_clean_exceptions + [PlotEnrollmentError, PlotCreateError]
 
     def save(self, *args, **kwargs):
         self.rss = True if self.selected in [TWENTY_PERCENT, FIVE_PERCENT] else False
@@ -162,9 +158,7 @@ class PlotIdentifierModelMixin(models.Model):
 
     @property
     def common_clean_exceptions(self):
-        common_clean_exceptions = super().common_clean_exceptions
-        common_clean_exceptions.extend([PlotIdentifierError])
-        return common_clean_exceptions
+        return super().common_clean_exceptions + [PlotIdentifierError]
 
     def save(self, *args, **kwargs):
         """Allocates a plot identifier to a new instance if permissions allow."""
@@ -205,9 +199,7 @@ class CreateHouseholdsModelMixin(models.Model):
 
     @property
     def common_clean_exceptions(self):
-        common_clean_exceptions = super().common_clean_exceptions
-        common_clean_exceptions.extend([CreateHouseholdError, MaxHouseholdsExceededError])
-        return common_clean_exceptions
+        return super().common_clean_exceptions + [CreateHouseholdError, MaxHouseholdsExceededError]
 
     def create_or_delete_households(self):
         """Creates or deletes households to try to equal the household_count.
