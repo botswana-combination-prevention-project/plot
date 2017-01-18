@@ -2,6 +2,7 @@
 
 from django.contrib import admin
 from django.urls.base import reverse
+from django.urls.exceptions import NoReverseMatch
 
 from edc_base.modeladmin_mixins import (
     ModelAdminChangelistButtonMixin, audit_fieldset_tuple, audit_fields)
@@ -59,8 +60,11 @@ class PlotAdmin(ModelAdminMixin):
             'plot_identifier', 'htc', 'rss', 'selected', 'enrolled', 'enrolled_datetime')
 
     def view_on_site(self, obj):
-        return reverse(
-            'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_identifier))
+        try:
+            return reverse(
+                'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_identifier))
+        except NoReverseMatch:
+            return super().view_on_site(obj)
 
 
 @admin.register(PlotLogEntry, site=plot_admin)
@@ -96,8 +100,11 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
         return super(PlotLogEntryAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def view_on_site(self, obj):
-        return reverse(
-            'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
+        try:
+            return reverse(
+                'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
+        except NoReverseMatch:
+            return super().view_on_site(obj)
 
 
 @admin.register(PlotLog, site=plot_admin)
