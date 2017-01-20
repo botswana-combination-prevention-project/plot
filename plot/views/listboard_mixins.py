@@ -1,17 +1,17 @@
 from django.apps import apps as django_apps
 from django.db.models import Q
 
-from edc_dashboard.view_mixins import FilteredListViewMixin, AppConfigViewMixin
-from edc_search.view_mixins import SearchViewMixin
+from edc_dashboard.view_mixins import (
+    FilteredListViewMixin as BaseFilteredListViewMixin,
+    AppConfigViewMixin as BaseAppConfigViewMixin)
+from edc_search.view_mixins import SearchViewMixin as BaseSearchViewMixin
 
 from ..models import Plot
 
 from .wrappers import PlotWithLogEntryModelWrapper
 
 
-class PlotAppConfigViewMixin(AppConfigViewMixin):
-
-    app_config_name = 'plot'
+class AppConfigViewMixin(BaseAppConfigViewMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -21,7 +21,7 @@ class PlotAppConfigViewMixin(AppConfigViewMixin):
         return context
 
 
-class PlotSearchViewMixin(SearchViewMixin):
+class SearchViewMixin(BaseSearchViewMixin):
 
     search_model = Plot
     search_model_wrapper_class = PlotWithLogEntryModelWrapper
@@ -44,9 +44,11 @@ class PlotSearchViewMixin(SearchViewMixin):
         return q, options
 
 
-class PlotFilteredListViewMixin(FilteredListViewMixin):
+class FilteredListViewMixin(BaseFilteredListViewMixin):
 
     filter_model = Plot
     filtered_model_wrapper_class = PlotWithLogEntryModelWrapper
     filtered_queryset_ordering = '-modified'
-    url_lookup_parameters = ['id', 'plot_identifier']
+    url_lookup_parameters = [
+        ('id', 'id'),
+        ('plot_identifier', 'plot_identifier')]

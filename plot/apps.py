@@ -38,6 +38,7 @@ class AppConfig(DjangoAppConfig):
     special_locations = ['clinic', 'mobile']
     add_plot_map_areas = ['test_community']
     map_url_name = 'plot:map_url'
+    anonymous_plot_identifier = '0000000-0'
 
     def ready(self):
         from plot.signals import plot_creates_households_on_post_save, update_plot_on_post_save

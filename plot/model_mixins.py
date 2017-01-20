@@ -147,7 +147,7 @@ class PlotIdentifierModelMixin(models.Model):
 
     def common_clean(self):
         """Block a device without permissions from allocating a plot identifier to a new instance."""
-        if not self.id:
+        if not self.id and not self.plot_identifier:
             edc_device_app_config = django_apps.get_app_config('edc_device')
             device_permissions = edc_device_app_config.device_permissions.get(self._meta.label_lower)
             if not device_permissions.may_add(edc_device_app_config.role):
@@ -162,7 +162,7 @@ class PlotIdentifierModelMixin(models.Model):
 
     def save(self, *args, **kwargs):
         """Allocates a plot identifier to a new instance if permissions allow."""
-        if not self.id:
+        if not self.id and not self.plot_identifier:
             edc_device_app_config = django_apps.get_app_config('edc_device')
             device_permissions = edc_device_app_config.device_permissions.get(self._meta.label_lower)
             if device_permissions.may_add(edc_device_app_config.role):

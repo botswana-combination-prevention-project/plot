@@ -50,5 +50,5 @@ class LocationView(EdcBaseViewMixin, MapImageView):
             json_data=json_data,
             item_label=format_html('<i class="fa fa-building-o fa-lg"></i>'),
             item_title='Plot',
-            navbar_selected='plot')
+            navbar_item_selected='plot')
         return context

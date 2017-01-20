@@ -11,11 +11,21 @@ from .views import ListBoardView, LocationView
 
 urlpatterns = [
     url(r'^admin/', plot_admin.urls),
+    url(r'^listboard/'
+        '(?P<plot_identifier>' + plot_identifier + ')/'
+        '(?P<page>\d+)/',
+        ListBoardView.as_view(), name='listboard_url'),
+    url(r'^listboard/'
+        '(?P<plot_identifier>' + plot_identifier + ')/',
+        ListBoardView.as_view(), name='listboard_url'),
+    url(r'^listboard/'
+        '(?P<id>' + UUID_PATTERN.pattern + ')/'
+        '(?P<page>\d+)/',
+        ListBoardView.as_view(), name='listboard_url'),
+    url(r'^listboard/'
+        '(?P<id>' + UUID_PATTERN.pattern + ')/',
+        ListBoardView.as_view(), name='listboard_url'),
     url(r'^listboard/(?P<page>\d+)/',
-        ListBoardView.as_view(), name='listboard_url'),
-    url(r'^listboard/(?P<plot_identifier>' + plot_identifier + ')/',
-        ListBoardView.as_view(), name='listboard_url'),
-    url(r'^listboard/(?P<id>' + UUID_PATTERN.pattern + ')/',
         ListBoardView.as_view(), name='listboard_url'),
     url(r'^listboard/',
         ListBoardView.as_view(), name='listboard_url'),
