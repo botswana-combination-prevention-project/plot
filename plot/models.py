@@ -21,13 +21,15 @@ from .constants import INACCESSIBLE
 from .exceptions import PlotEnrollmentError
 from .managers import PlotManager, PlotLogManager, PlotLogEntryManager
 from .model_mixins import (
-    PlotIdentifierModelMixin, CreateHouseholdsModelMixin, PlotEnrollmentMixin, PlotConfirmationMixin)
+    PlotIdentifierModelMixin, CreateHouseholdsModelMixin,
+    PlotEnrollmentMixin, PlotConfirmationMixin)
 
 
-class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin, PlotEnrollmentMixin,
-           PlotConfirmationMixin, CreateHouseholdsModelMixin, BaseUuidModel):
-    """A model created by the system and updated by the user to represent a Plot
-    in the community."""
+class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
+           PlotEnrollmentMixin, PlotConfirmationMixin,
+           CreateHouseholdsModelMixin, BaseUuidModel):
+    """A model created by the system and updated by the user to
+    represent a Plot in the community."""
 
     report_datetime = models.DateTimeField(
         validators=[datetime_not_future],
@@ -150,6 +152,10 @@ class PlotLog(BaseUuidModel):
     """A system model to track an RA\'s attempts to confirm a Plot (related)."""
 
     plot = models.OneToOneField(Plot, on_delete=PROTECT)
+
+    report_datetime = models.DateTimeField(
+        verbose_name="Report date",
+        default=get_utcnow)
 
     history = HistoricalRecords()
 
