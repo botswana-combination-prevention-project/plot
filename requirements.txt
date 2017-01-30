@@ -21,3 +21,4 @@ git+https://github.com/botswana-harvard/survey@develop#survey
 git+https://github.com/botswana-harvard/member@develop#member
 git+https://github.com/botswana-harvard/household@develop#household
 git+https://github.com/botswana-harvard/edc-sync@develop#edc-sync
+git+https://github.com/botswana-harvard/edc-map@develop#edc-map
