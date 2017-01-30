@@ -23,3 +23,4 @@ git+https://github.com/botswana-harvard/household@develop#household
 git+https://github.com/botswana-harvard/edc-sync@develop#edc-sync
 git+https://github.com/botswana-harvard/edc-map@develop#edc-map
 git+https://github.com/botswana-harvard/edc-appointment@develop#edc-appointment
+git+https://github.com/botswana-harvard/bcpp@develop#bcpp
