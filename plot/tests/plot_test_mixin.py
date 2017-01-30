@@ -28,6 +28,7 @@ class PlotTestMixin:
             'report_datetime', self.get_utcnow())
         plot = mommy.make_recipe(
             'plot.plot',
+            plot_identifier=None,
             **opts)
 
         self.assertFalse(plot.confirmed)
