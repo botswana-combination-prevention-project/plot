@@ -18,3 +18,4 @@ git+https://github.com/botswana-harvard/edc-offstudy@develop#edc_offstudy
 git+https://github.com/botswana-harvard/edc-dashboard@develop#edc_dashboard
 git+https://github.com/botswana-harvard/example-survey@develop#example_survey
 git+https://github.com/botswana-harvard/survey@develop#survey
+git+https://github.com/botswana-harvard/edc-sync@develop#edc-sync
