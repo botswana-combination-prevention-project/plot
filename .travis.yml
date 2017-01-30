@@ -20,8 +20,6 @@ install:
 before_script:
 - flake8 plot
 - mysql -e 'create database edc character set utf8;'
-- python manage.py makemigrations
-- python manage.py migrate
 script:
 - coverage run --source=plot manage.py test
 after_success:
