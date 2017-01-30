@@ -27,8 +27,10 @@ class GpsProvider(BaseProvider):
     def confirmed_longitude(self):
         return round(self.target_point.longitude - random() / 10000000, 15)
 
+
 fake = Faker()
 fake.add_provider(GpsProvider)
+
 
 plot = Recipe(
     Plot,
@@ -45,9 +47,11 @@ plot = Recipe(
     htc=False,
 )
 
+
 plotlog = Recipe(
     PlotLog,
 )
+
 
 plotlogentry = Recipe(
     PlotLogEntry,

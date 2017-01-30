@@ -28,13 +28,15 @@ class SearchViewMixin(BaseSearchViewMixin):
     search_queryset_ordering = '-modified'
 
     def search_options_for_date(self, search_term, **kwargs):
-        """Adds report_datetime to search by date."""
+        """Adds report_datetime to search by date.
+        """
         q, options = super().search_options_for_date(search_term, **kwargs)
         q = q | Q(report_datetime__date=search_term.date())
         return q, options
 
     def search_options(self, search_term, **kwargs):
-        """Adds `ESS` as a special keyword in search."""
+        """Adds `ESS` as a special keyword in search.
+        """
         q, options = super().search_options(search_term, **kwargs)
         if search_term.lower() == 'ess':
             options = {'ess': True}

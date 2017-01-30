@@ -10,6 +10,7 @@ from edc_constants.constants import CLOSED, OPEN
 
 
 class Enrollment:
+
     def __init__(self, opening_datetime, closing_datetime):
         self.opening_datetime = opening_datetime
         self.closing_datetime = closing_datetime
@@ -41,7 +42,9 @@ class AppConfig(DjangoAppConfig):
     anonymous_plot_identifier = '0000000-0'
 
     def ready(self):
-        from plot.signals import plot_creates_households_on_post_save, update_plot_on_post_save
+        from plot.signals import (
+            plot_creates_households_on_post_save,
+            update_plot_on_post_save)
 
     def excluded_plot(self, obj):
         """Returns True if the plot is excluded from being surveyed.

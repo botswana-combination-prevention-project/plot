@@ -23,12 +23,24 @@ class PlotAdmin(ModelAdminMixin):
     list_max_show_all = 1000
     fieldsets = (
         (None, {'fields':
-                ('plot_identifier', 'status', 'gps_confirmed_latitude', 'gps_confirmed_longitude',
-                 'cso_number', 'household_count', 'eligible_members', 'time_of_week', 'time_of_day',
+                ('plot_identifier',
+                 'status',
+                 'gps_confirmed_latitude',
+                 'gps_confirmed_longitude',
+                 'cso_number',
+                 'household_count',
+                 'eligible_members',
+                 'time_of_week',
+                 'time_of_day',
                  'description', 'comment')}),
         ('Location', {
             'classes': ('collapse',),
-            'fields': ('location_name', 'map_area', 'gps_target_lat', 'gps_target_lon', 'target_radius')}),
+            'fields': (
+                'location_name',
+                'map_area',
+                'gps_target_lat',
+                'gps_target_lon',
+                'target_radius')}),
         ('Categories', {
             'classes': ('collapse',),
             'fields': ('rss', 'htc', 'ess', 'selected')}),
@@ -45,24 +57,58 @@ class PlotAdmin(ModelAdminMixin):
     }
 
     list_display = (
-        'plot_identifier', 'status', 'accessible', 'confirmed', 'rss', 'htc', 'ess', 'enrolled', 'household_count',
-        'enrolled_datetime', 'eligible_members', 'modified', 'user_modified', 'hostname_modified')
+        'plot_identifier',
+        'status',
+        'accessible',
+        'confirmed',
+        'rss',
+        'htc',
+        'ess',
+        'enrolled',
+        'household_count',
+        'enrolled_datetime',
+        'eligible_members',
+        'modified',
+        'user_modified',
+        'hostname_modified')
 
-    list_filter = ('accessible', 'confirmed', 'rss', 'htc', 'ess', 'enrolled', 'status', 'created', 'modified', 'map_area',
-                   'access_attempts', 'hostname_modified',
-                   'section', 'sub_section', 'selected', 'time_of_week', 'time_of_day')
+    list_filter = (
+        'accessible',
+        'confirmed',
+        'rss',
+        'htc',
+        'ess',
+        'enrolled',
+        'status',
+        'created',
+        'modified',
+        'map_area',
+        'access_attempts',
+        'hostname_modified',
+        'section',
+        'sub_section',
+        'selected',
+        'time_of_week',
+        'time_of_day')
 
     search_fields = (
-        'plot_identifier', 'cso_number', 'map_area', 'section', 'status', 'id') + audit_fields
+        'plot_identifier',
+        'cso_number',
+        'map_area',
+        'section',
+        'status',
+        'id') + audit_fields
 
     def get_readonly_fields(self, request, obj=None):
         return super().get_readonly_fields(request, obj=obj) + (
-            'plot_identifier', 'htc', 'rss', 'selected', 'enrolled', 'enrolled_datetime')
+            'plot_identifier', 'htc', 'rss', 'selected',
+            'enrolled', 'enrolled_datetime')
 
     def view_on_site(self, obj):
         try:
             return reverse(
-                'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_identifier))
+                'plot:listboard_url',
+                kwargs=dict(plot_identifier=obj.plot_identifier))
         except NoReverseMatch:
             return super().view_on_site(obj)
 
@@ -73,14 +119,29 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
     date_hierarchy = 'modified'
     fieldsets = (
         (None, {'fields': (
-            'plot_log', 'report_datetime', 'log_status', 'reason', 'reason_other', 'comment')}),
+            'plot_log',
+            'report_datetime',
+            'log_status',
+            'reason',
+            'reason_other',
+            'comment')}),
         audit_fieldset_tuple)
 
     list_per_page = 15
-    list_display = ('plot_log', 'plots_button', 'log_status', 'report_datetime')
-    list_filter = ('log_status', 'report_datetime', 'plot_log__plot__map_area', 'log_status')
+    list_display = (
+        'plot_log',
+        'plots_button',
+        'log_status',
+        'report_datetime')
+    list_filter = (
+        'log_status',
+        'report_datetime',
+        'plot_log__plot__map_area',
+        'log_status')
     search_fields = (
-        'log_status', 'plot_log__plot__map_area', 'plot_log__plot__plot_identifier') + audit_fields
+        'log_status',
+        'plot_log__plot__map_area',
+        'plot_log__plot__plot_identifier') + audit_fields
     radio_fields = {
         'reason': admin.VERTICAL,
         'log_status': admin.VERTICAL
@@ -96,13 +157,16 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "plot_log":
             if request.GET.get('plot_log'):
-                kwargs["queryset"] = PlotLog.objects.filter(id__exact=request.GET.get('plot_log', 0))
-        return super(PlotLogEntryAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+                kwargs["queryset"] = PlotLog.objects.filter(
+                    id__exact=request.GET.get('plot_log', 0))
+        return super().formfield_for_foreignkey(
+            db_field, request, **kwargs)
 
     def view_on_site(self, obj):
         try:
             return reverse(
-                'plot:listboard_url', kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
+                'plot:listboard_url',
+                kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
         except NoReverseMatch:
             return super().view_on_site(obj)
 

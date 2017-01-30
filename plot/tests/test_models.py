@@ -26,7 +26,8 @@ from .mixins import PlotMixin
 
 
 class TestPlotCreatePermissions(PlotMixin, TestCase):
-    """Assert permissions / roles that can create plots."""
+    """Assert permissions / roles that can create plots.
+    """
 
     def setUp(self):
         super().setUp()
@@ -34,7 +35,8 @@ class TestPlotCreatePermissions(PlotMixin, TestCase):
 
     @override_settings(DEVICE_ID='99')
     def test_create_plot_server(self):
-        """Asserts a plot may be created by a server."""
+        """Asserts a plot may be created by a server.
+        """
         django_apps.app_configs['edc_device'].ready(verbose_messaging=False)
         edc_device_app_config = django_apps.get_app_config('edc_device')
         self.assertEqual(edc_device_app_config.role, CENTRAL_SERVER)
@@ -51,12 +53,14 @@ class TestPlotCreatePermissions(PlotMixin, TestCase):
         self.assertEqual(edc_device_app_config.role, CLIENT)
         try:
             self.make_plot()
-        except PlotIdentifierError:
-            self.fail('PlotIdentifierError unexpectedly raised')
+        except PlotIdentifierError as e:
+            self.fail('PlotIdentifierError unexpectedly raised. '
+                      'Got {}'.format(e))
 
     @override_settings(DEVICE_ID='99')
     def test_create_plot_enrolled_cannot_unconfirm(self):
-        """Assert cannot unconfirm an enrolled plot."""
+        """Assert cannot unconfirm an enrolled plot.
+        """
         django_apps.app_configs['edc_device'].ready(
             verbose_messaging=False)
         plot = self.make_confirmed_plot()
@@ -96,7 +100,8 @@ class TestPlot(PlotMixin, TestCase):
 
     def test_plot_creates_household(self):
         """Assert creating a plot with a household count creates
-        that many households"""
+        that many households.
+        """
         plot = self.make_confirmed_plot(household_count=1)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 1)
         plot = self.make_confirmed_plot(household_count=2)
@@ -105,7 +110,8 @@ class TestPlot(PlotMixin, TestCase):
         self.assertEqual(Household.objects.filter(plot=plot).count(), 3)
 
     def test_plot_add_subtract_household(self):
-        """Assert change number of households will delete and recreate."""
+        """Assert change number of households will delete and recreate.
+        """
         plot = self.make_confirmed_plot(household_count=3)
         self.assertEqual(Household.objects.filter(plot=plot).count(), 3)
         plot.household_count = 2
@@ -126,7 +132,8 @@ class TestPlot(PlotMixin, TestCase):
             self.make_confirmed_plot, household_count=10)
 
     def test_plot_confirms_plot_by_good_gps(self):
-        """Asserts a target can be confirmed."""
+        """Asserts a target can be confirmed.
+        """
         plot = mommy.make_recipe('plot.plot')
         self.assertFalse(Plot.objects.get(pk=plot.pk).confirmed)
         plot.gps_confirmed_latitude = fake.confirmed_latitude()
@@ -135,7 +142,8 @@ class TestPlot(PlotMixin, TestCase):
         self.assertTrue(Plot.objects.get(pk=plot.pk).confirmed)
 
     def test_plot_raises_on_bad_gps(self):
-        """Asserts a target can be confirmed."""
+        """Asserts a target can be confirmed.
+        """
         plot = mommy.make_recipe(
             'plot.plot',
             gps_target_lat=fake.target_latitude,
@@ -147,7 +155,8 @@ class TestPlot(PlotMixin, TestCase):
 
     def test_plot_save_on_change(self):
         """Allows change of residential_habitable plot even though no
-        log entry or members have been added yet."""
+        log entry or members have been added yet.
+        """
         plot = mommy.make_recipe('plot.plot', status=INACCESSIBLE)
         plot.status = RESIDENTIAL_HABITABLE
         plot.save()
@@ -198,22 +207,26 @@ class TestPlot(PlotMixin, TestCase):
             self.fail('PlotConfirmationError unexpectedly raised')
 
     def test_create_plot1(self):
-        """Assert rss is false if not a selected plot."""
+        """Assert rss is false if not a selected plot.
+        """
         plot = self.make_plot(selected=None)
         self.assertFalse(plot.rss)
 
     def test_create_plot2(self):
-        """Assert rss true if a selected plot."""
+        """Assert rss true if a selected plot.
+        """
         plot = self.make_plot(selected=TWENTY_PERCENT)
         self.assertTrue(plot.rss)
 
     def test_create_plot3(self):
-        """Assert can create plot for use by HTC outside of RSS."""
+        """Assert can create plot for use by HTC outside of RSS.
+        """
         plot = self.make_plot(htc=True, selected=None)
         self.assertTrue(plot.htc)
 
     def test_create_plot4(self):
-        """Assert cannot create plot for use by HTC and ESS."""
+        """Assert cannot create plot for use by HTC and ESS.
+        """
         self.assertRaises(
             PlotEnrollmentError,
             self.make_plot, htc=True, selected=None, ess=True)
@@ -243,7 +256,8 @@ class TestPlot(PlotMixin, TestCase):
         self.confirm_plot(plot)
 
     def test_cannot_create_plot_enrolled_without_date(self):
-        """Assert cannot update enrolled without enrollment date."""
+        """Assert cannot update enrolled without enrollment date.
+        """
         plot = self.make_confirmed_plot()
         plot.enrolled = True
         self.assertRaises(PlotEnrollmentError, plot.save)

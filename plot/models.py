@@ -49,14 +49,16 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         help_text=("provide the CSO number or leave BLANK."))
 
     time_of_week = models.CharField(
-        verbose_name='Time of week when most of the eligible members will be available',
+        verbose_name=(
+            'Time of week when most of the eligible members will be available'),
         max_length=25,
         choices=TIME_OF_WEEK,
         blank=True,
         null=True)
 
     time_of_day = models.CharField(
-        verbose_name='Time of day when most of the eligible members will be available',
+        verbose_name=(
+            'Time of day when most of the eligible members will be available'),
         max_length=25,
         choices=TIME_OF_DAY,
         blank=True,
@@ -87,7 +89,8 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
 
     access_attempts = models.IntegerField(
         default=0,
-        help_text='Number of attempts to access a plot to determine it\'s status.',
+        help_text=(
+            'Number of attempts to access a plot to determine it\'s status.'),
         editable=False)
 
     objects = PlotManager()
@@ -95,7 +98,8 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
     history = HistoricalRecords()
 
     def __str__(self):
-        return '{} {}'.format(self.location_name or 'undetermined', self.plot_identifier)
+        return '{} {}'.format(
+            self.location_name or 'undetermined', self.plot_identifier)
 
     def save(self, *args, **kwargs):
         if self.id and not self.location_name:
@@ -117,8 +121,11 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
 
     def common_clean(self):
         if self.map_area not in site_mappers.map_areas:
-            msg = 'Invalid map area. Valid map areas are %(map_areas)s. Got %(map_area)s'
-            params = {'map_area': self.map_area, 'map_areas': ', '.join(site_mappers.map_areas)}
+            msg = (
+                'Invalid map area. Valid map areas are %(map_areas)s. '
+                'Got %(map_area)s')
+            params = {'map_area': self.map_area,
+                      'map_areas': ', '.join(site_mappers.map_areas)}
             field = 'map_area'
             raise MapperError(msg.format(**params), field, params, msg)
         if self.id:
@@ -126,12 +133,14 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
                 self.get_confirmed()
             except MapperError:
                 if self.enrolled:
-                    raise PlotEnrollmentError('Plot is enrolled and may not be unconfirmed')
+                    raise PlotEnrollmentError(
+                        'Plot is enrolled and may not be unconfirmed')
         super().common_clean()
 
     @property
     def common_clean_exceptions(self):
-        return super().common_clean_exceptions + [PlotEnrollmentError, MapperError]
+        return (super().common_clean_exceptions
+                + [PlotEnrollmentError, MapperError])
 
     @property
     def identifier_segment(self):
@@ -149,7 +158,9 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
 
 
 class PlotLog(BaseUuidModel):
-    """A system model to track an RA\'s attempts to confirm a Plot (related)."""
+    """A system model to track an RA\'s attempts to confirm a Plot
+    (related).
+    """
 
     plot = models.OneToOneField(Plot, on_delete=PROTECT)
 
@@ -173,7 +184,9 @@ class PlotLog(BaseUuidModel):
 
 
 class PlotLogEntry(BaseUuidModel):
-    """A model completed by the user to track an RA\'s attempts to confirm a Plot."""
+    """A model completed by the user to track an RA\'s attempts to
+    confirm a Plot.
+    """
 
     plot_log = models.ForeignKey(PlotLog, on_delete=PROTECT)
 
@@ -211,7 +224,8 @@ class PlotLogEntry(BaseUuidModel):
         max_length=250,
         null=True,
         blank=True,
-        help_text=('IMPORTANT: Do not include any names or other personally identifying '
+        help_text=('IMPORTANT: Do not include any names or other '
+                   'personally identifying '
                    'information in this comment'))
 
     objects = PlotLogEntryManager()
@@ -228,7 +242,8 @@ class PlotLogEntry(BaseUuidModel):
     natural_key.dependencies = ['plot.plot_log']
 
     def __str__(self):
-        return '{} ({})'.format(self.plot_log, self.report_datetime.strftime('%Y-%m-%d'))
+        return '{} ({})'.format(
+            self.plot_log, self.report_datetime.strftime('%Y-%m-%d'))
 
     class Meta:
         app_label = 'plot'

@@ -96,7 +96,8 @@ DATABASES = {
 }
 
 
-if 'test' in sys.argv:  # and 'mysql' not in DATABASES.get('default').get('ENGINE'):
+# and 'mysql' not in DATABASES.get('default').get('ENGINE'):
+if 'test' in sys.argv:
     MIGRATION_MODULES = {
         "django_crypto_fields": None,
         "edc_call_manager": None,
@@ -133,7 +134,8 @@ if 'test' in sys.argv:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME':
+        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',

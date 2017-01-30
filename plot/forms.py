@@ -26,7 +26,8 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
         if not self.instance.id:
             if not app_config.allow_add_plot(cleaned_data.get('map_area')):
                 raise forms.ValidationError(
-                    'Plots may not be added in this community. Got \'{}\'.'.format(
+                    'Plots may not be added in this community. '
+                    'Got \'{}\'.'.format(
                         cleaned_data.get('map_area')))
             else:
                 if not cleaned_data.get('ess'):
@@ -39,14 +40,17 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
         else:
             if cleaned_data.get('location_name') in app_config.special_locations:
                 raise forms.ValidationError(
-                    'Plot may not be changed by a user. Plot location name == \'{}\''.format(
+                    'Plot may not be changed by a user. Plot location '
+                    'name == \'{}\''.format(
                         cleaned_data.get('location_name')))
             try:
                 PlotLogEntry.objects.exclude(
-                    log_status=INACCESSIBLE).get(plot_log__plot__pk=self.instance.id)
+                    log_status=INACCESSIBLE).get(
+                        plot_log__plot__pk=self.instance.id)
             except PlotLogEntry.DoesNotExist:
                 raise forms.ValidationError(
-                    'Plot log entry is required before attempting to modify a plot.')
+                    'Plot log entry is required before attempting '
+                    'to modify a plot.')
             except MultipleObjectsReturned:
                 pass
         self.household_count()
@@ -60,20 +64,24 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
 
     def eligible_members(self):
         cleaned_data = self.cleaned_data
-        if cleaned_data.get('status') != RESIDENTIAL_HABITABLE and cleaned_data.get('eligible_members'):
+        if (cleaned_data.get('status') != RESIDENTIAL_HABITABLE
+                and cleaned_data.get('eligible_members')):
             raise forms.ValidationError(
                 {'eligible_members': 'Must be zero if not {}'.format(
                     get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE))})
-        elif cleaned_data.get('eligible_members') and not cleaned_data.get('household_count'):
+        elif (cleaned_data.get('eligible_members')
+              and not cleaned_data.get('household_count')):
             raise forms.ValidationError(
                 {'eligible_members': 'Must be zero if no households'})
 
     def household_count(self):
         cleaned_data = self.cleaned_data
-        if cleaned_data.get('status') != RESIDENTIAL_HABITABLE and cleaned_data.get('household_count'):
+        if (cleaned_data.get('status') != RESIDENTIAL_HABITABLE
+                and cleaned_data.get('household_count')):
             raise forms.ValidationError(
                 {'household_count': 'Must be zero if no households'})
-        elif cleaned_data.get('status') == RESIDENTIAL_HABITABLE and not cleaned_data.get('household_count'):
+        elif (cleaned_data.get('status') == RESIDENTIAL_HABITABLE
+              and not cleaned_data.get('household_count')):
             raise forms.ValidationError(
                 {'household_count': 'May not be zero if {}'.format(
                     get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE))})
@@ -110,31 +118,18 @@ class PlotLogEntryForm(CommonCleanModelFormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super(PlotLogEntryForm, self).clean()
         plot_log = cleaned_data.get('plot_log')
-        # TODO: add the allow_enrollment method to plot.
-#         plot_log.plot.allow_enrollment('default',
-#                                        plot_instance=plot_log.plot,
-#                                        exception_cls=forms.ValidationError)
-        # confirm that an inaccessible log entry is not entered against a confirmed plot.
         status = cleaned_data.get('log_status')
         if status == INACCESSIBLE and plot_log.plot.confirmed:
             raise forms.ValidationError(
-                {'accessible': 'This plot has been \'confirmed\'. Cannot be inaccessible.'})
+                {'accessible':
+                 'This plot has been \'confirmed\'. Cannot be inaccessible.'})
         if status == ACCESSIBLE:
             if cleaned_data.get('reason'):
-                raise forms.ValidationError({'reason': 'Reason is not required if accessible.'})
+                raise forms.ValidationError(
+                    {'reason': 'Reason is not required if accessible.'})
             if cleaned_data.get('reason_other'):
-                raise forms.ValidationError({'reason_other': 'Not required if plot is accessible.'})
-# TODO: removed.
-#         report_datetime = cleaned_data.get('report_datetime')
-#         report_date = arrow.Arrow.fromdatetime(report_datetime, report_datetime.tzinfo).to('utc').date()
-#         try:
-#             PlotLogEntry.objects.get(report_date=report_date, plot_log=plot_log)
-#         except PlotLogEntry.DoesNotExist:
-#             pass
-#         else:
-#             if not self.instance.id:
-#                 raise forms.ValidationError(
-#                     'A plot log entry for {} already exists.'.format(report_date.strftime('%Y-%m-%d')))
+                raise forms.ValidationError(
+                    {'reason_other': 'Not required if plot is accessible.'})
         return cleaned_data
 
     class Meta:

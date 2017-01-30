@@ -5,7 +5,8 @@ from model_mommy import mommy
 from ..forms import PlotForm, PlotLogEntryForm
 from ..models import PlotLog
 
-from ..constants import ACCESSIBLE, RESIDENTIAL_HABITABLE, RESIDENTIAL_NOT_HABITABLE
+from ..constants import (
+    ACCESSIBLE, RESIDENTIAL_HABITABLE, RESIDENTIAL_NOT_HABITABLE)
 from ..models import PlotLogEntry
 from ..mommy_recipes import fake
 
@@ -16,12 +17,14 @@ class TestFormsNoAdd(PlotMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.add_plot_map_areas = django_apps.app_configs['plot'].add_plot_map_areas
+        self.add_plot_map_areas = django_apps.app_configs[
+            'plot'].add_plot_map_areas
         django_apps.app_configs['plot'].add_plot_map_areas = []
 
     def tearDown(self):
         super().tearDown()
-        django_apps.app_configs['plot'].add_plot_map_areas = self.add_plot_map_areas
+        django_apps.app_configs[
+            'plot'].add_plot_map_areas = self.add_plot_map_areas
 
     def test_cannot_add_plot_form_if_not_allowed(self):
         plot = mommy.prepare_recipe(
@@ -79,7 +82,8 @@ class TestForms(PlotMixin, TestCase):
         self.assertFalse(form.is_valid())
 
     def test_plot_log_entry_form(self):
-        """Add a plot log entry."""
+        """Add a plot log entry.
+        """
         plot = self.make_confirmed_plot(household_count=1)
         plot_log = PlotLog.objects.get(plot=plot)
         form = PlotLogEntryForm(
@@ -90,7 +94,8 @@ class TestForms(PlotMixin, TestCase):
         self.assertTrue(form.is_valid())
 
     def test_attempt_to_add_many_plot_log_entry_per_day(self):
-        """Attempt to add more than one plot log entry in a day."""
+        """Attempt to add more than one plot log entry in a day.
+        """
         plot = self.make_confirmed_plot(household_count=1)
         plot_log = PlotLog.objects.get(plot=plot)
         plot_log_entry = PlotLogEntry.objects.get(plot_log=plot_log)

@@ -55,7 +55,8 @@ class PlotConfirmationMixin(models.Model):
                         # add Plot -> signal creates PlotLog, -> user
                         # creates PlotLogEntry -> user may update Plot
                         raise PlotConfirmationError(
-                            'Plot cannot be confirmed. Got plot log not created.')
+                            'Plot cannot be confirmed. '
+                            'Got plot log not created.')
                 if self.htc:
                     # HTC is a special case, HTC plots are excluded
                     # plots as well
@@ -234,9 +235,11 @@ class CreateHouseholdsModelMixin(models.Model):
             CreateHouseholdError, MaxHouseholdsExceededError]
 
     def create_or_delete_households(self):
-        """Creates or deletes households to try to equal the household_count.
+        """Creates or deletes households to try to equal the
+        household_count.
 
-        Delete will fail if household has data upstream."""
+        Delete will fail if household has data upstream.
+        """
         app_config = django_apps.get_app_config('plot')
 
         if self.household_count > app_config.max_households:
@@ -277,7 +280,8 @@ class CreateHouseholdsModelMixin(models.Model):
                     pass
 
     def safe_delete(self, household):
-        """Safe delete households passing on ProtectedErrors."""
+        """Safe delete households passing on ProtectedErrors.
+        """
         HouseholdLog = django_apps.get_model('household.householdlog')
         HouseholdStructure = django_apps.get_model(
             'household.householdstructure')

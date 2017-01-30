@@ -11,7 +11,8 @@ from edc_base.utils import get_utcnow
 
 class PlotTestMixin:
 
-    """A TestMixin class that adds methods specific to Plot processes."""
+    """A TestMixin class that adds methods specific to Plot processes.
+    """
 
     def make_plot(self, **options):
         """Returns a plot instance as would be made initially by
@@ -50,7 +51,8 @@ class PlotTestMixin:
         return plot
 
     def make_confirmed_plot(self, **options):
-        """Make an accessible confirmed plot along with a plot log entry."""
+        """Make an accessible confirmed plot along with a plot log entry.
+        """
 
         plot = self.make_plot(**options)
 
@@ -77,7 +79,8 @@ class PlotTestMixin:
 
     def add_plot_log_entry(self, plot, log_status=None, **options):
         """Returns a plot log entry instance that defaults to an
-        accessible plot."""
+        accessible plot.
+        """
         log_status = log_status or ACCESSIBLE
         plot_log = PlotLog.objects.get(plot=plot)
 
