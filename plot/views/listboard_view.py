@@ -38,7 +38,7 @@ class ListBoardView(FilteredListViewMixin, SearchViewMixin,
             return qs.exclude(
                 household__plot__plot_identifier=plot_identifier).order_by(
                     self.filtered_queryset_ordering)
-        return None
+        return qs
 
     def search_queryset(self, search_term, **kwargs):
         qs = super().search_queryset(search_term, **kwargs)
@@ -48,4 +48,4 @@ class ListBoardView(FilteredListViewMixin, SearchViewMixin,
             return qs.exclude(
                 household__plot__plot_identifier=plot_identifier).order_by(
                     self.filtered_queryset_ordering)
-        return None
+        return qs
