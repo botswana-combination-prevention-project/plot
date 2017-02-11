@@ -22,12 +22,12 @@ from .exceptions import PlotEnrollmentError
 from .managers import PlotManager, PlotLogManager, PlotLogEntryManager
 from .model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin,
-    PlotEnrollmentMixin, PlotConfirmationMixin)
+    PlotEnrollmentMixin, PlotConfirmationMixin, SearchSlugModelMixin)
 
 
 class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
            PlotEnrollmentMixin, PlotConfirmationMixin,
-           CreateHouseholdsModelMixin, BaseUuidModel):
+           CreateHouseholdsModelMixin, SearchSlugModelMixin, BaseUuidModel):
     """A model created by the system and updated by the user to
     represent a Plot in the community."""
 

@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator
 from django.db import models, transaction
 from django.db.models import options
 
+from edc_dashboard.model_mixins import SearchSlugModelMixin as BaseSearchSlugModelMixin
 from edc_identifier.research_identifier import ResearchIdentifier
 from edc_map.site_mappers import site_mappers
 
@@ -27,6 +28,20 @@ class PlotIdentifier(ResearchIdentifier):
 
     template = '{map_code}{sequence}'
     label = 'plot_identifier'
+
+
+class SearchSlugModelMixin(BaseSearchSlugModelMixin):
+
+    def get_slugs(self):
+        slugs = super().get_slugs()
+        return slugs + [
+            self.plot_identifier or '',
+            self.map_area or '',
+            self.cso_number or '',
+        ]
+
+    class Meta:
+        abstract = True
 
 
 class PlotConfirmationMixin(models.Model):

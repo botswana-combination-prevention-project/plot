@@ -3,7 +3,7 @@
   <!-- result is a ModelWithLogEntry wrapper -->
   <tr>
     <!--counter-->
-    <td>{{ forloop.counter }}</td>
+    <td>{{ page_obj.start_index|add:forloop.counter0 }}</td>
     <!--buttons-->
 
       {% include 'plot/listboard/results_body/button_column.html' %}
