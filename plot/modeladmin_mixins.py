@@ -12,8 +12,10 @@ from edc_base.modeladmin_mixins import (
 class ModelAdminMixin(ModelAdminFormInstructionsMixin,
                       ModelAdminNextUrlRedirectMixin,
                       ModelAdminFormAutoNumberMixin,
-                      ModelAdminRevisionMixin, ModelAdminAuditFieldsMixin,
-                      ModelAdminReadOnlyMixin, admin.ModelAdmin):
+                      ModelAdminRevisionMixin,
+                      ModelAdminAuditFieldsMixin,
+                      ModelAdminReadOnlyMixin,
+                      admin.ModelAdmin):
 
     list_per_page = 10
     date_hierarchy = 'modified'

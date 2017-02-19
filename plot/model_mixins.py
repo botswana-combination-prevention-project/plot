@@ -4,20 +4,20 @@ from django.apps import apps as django_apps
 from django.core.validators import MaxValueValidator
 from django.db import models, transaction
 from django.db.models import options
+from django.db.models.deletion import ProtectedError
+from django.db.utils import IntegrityError
 
 from edc_dashboard.model_mixins import SearchSlugModelMixin as BaseSearchSlugModelMixin
 from edc_identifier.research_identifier import ResearchIdentifier
+from edc_map.exceptions import MapperError
 from edc_map.site_mappers import site_mappers
 
+from .choices import SELECTED
+from .constants import TWENTY_PERCENT, FIVE_PERCENT
 from .exceptions import (
     MaxHouseholdsExceededError, PlotIdentifierError,
     PlotConfirmationError, PlotEnrollmentError,
     CreateHouseholdError, PlotCreateError)
-from edc_map.exceptions import MapperError
-from django.db.models.deletion import ProtectedError
-from plot.constants import TWENTY_PERCENT, FIVE_PERCENT
-from plot.choices import SELECTED
-from django.db.utils import IntegrityError
 
 
 if 'household_model' not in options.DEFAULT_NAMES:
