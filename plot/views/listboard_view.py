@@ -6,6 +6,7 @@ from edc_base.view_mixins import EdcBaseViewMixin
 from edc_dashboard.view_mixins import AppConfigViewMixin
 from edc_dashboard.views import ListboardView as BaseListboardView
 from edc_dashboard.forms import SearchForm as BaseSearchForm
+from edc_map.models import InnerContainer
 
 
 from ..constants import RESIDENTIAL_HABITABLE
@@ -52,4 +53,13 @@ class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, BaseListboardView):
         if plot_identifier:
             options.update(
                 {'plot_identifier': plot_identifier})
+        plot_identifier_list = []
+        try:
+            plot_identifier_list = InnerContainer.objects.get(
+                username=request.user.username).identifier_labels
+        except InnerContainer.DoesNotExist:
+            plot_identifier_list = []
+        if plot_identifier_list:
+            options.update(
+                {'plot_identifier__in': plot_identifier_list})
         return options
