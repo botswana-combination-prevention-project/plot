@@ -11,6 +11,7 @@ from edc_base.model.models import BaseUuidModel, HistoricalRecords
 from edc_base.model.validators.date import datetime_not_future
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
+from edc_dashboard.model_mixins import SearchSlugManager
 from edc_device.model_mixins import DeviceModelMixin
 from edc_map.exceptions import MapperError
 from edc_map.model_mixins import MapperModelMixin
@@ -19,10 +20,16 @@ from edc_map.site_mappers import site_mappers
 from .choices import PLOT_STATUS, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
 from .constants import INACCESSIBLE
 from .exceptions import PlotEnrollmentError
-from .managers import PlotManager, PlotLogManager, PlotLogEntryManager
+from .managers import (
+    PlotManager as BasePlotManager,
+    PlotLogManager, PlotLogEntryManager)
 from .model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin,
     PlotEnrollmentMixin, PlotConfirmationMixin, SearchSlugModelMixin)
+
+
+class PlotManager(BasePlotManager, SearchSlugManager):
+    pass
 
 
 class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
