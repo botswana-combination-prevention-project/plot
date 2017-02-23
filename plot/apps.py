@@ -2,7 +2,7 @@
 
 from dateutil.relativedelta import relativedelta
 
-from django.apps.config import AppConfig as DjangoAppConfig
+from django.apps import AppConfig as DjangoAppConfig
 from django.utils import timezone
 
 from edc_base.utils import get_utcnow

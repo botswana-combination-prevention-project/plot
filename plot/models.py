@@ -36,7 +36,8 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
            PlotEnrollmentMixin, PlotConfirmationMixin,
            CreateHouseholdsModelMixin, SearchSlugModelMixin, BaseUuidModel):
     """A model created by the system and updated by the user to
-    represent a Plot in the community."""
+    represent a Plot in the community.
+    """
 
     report_datetime = models.DateTimeField(
         validators=[datetime_not_future],
