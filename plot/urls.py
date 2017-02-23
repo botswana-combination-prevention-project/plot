@@ -9,6 +9,8 @@ from plot.patterns import plot_identifier
 from .admin_site import plot_admin
 from .views import ListBoardView, LocationView
 
+app_name = 'plot'
+
 urlpatterns = [
     url(r'^admin/', plot_admin.urls),
     url(r'^listboard/'
