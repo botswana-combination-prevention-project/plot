@@ -39,12 +39,16 @@ class AppConfig(DjangoAppConfig):
     special_locations = ['clinic', 'mobile']
     add_plot_map_areas = ['test_community']
     map_url_name = 'plot:map_url'
-    anonymous_plot_identifier = '0000000-0'
 
     def ready(self):
         from plot.signals import (
             plot_creates_households_on_post_save,
             update_plot_on_post_save)
+
+    @property
+    def anonymous_plot_identifier(self):
+        from edc_map.site_mappers import site_mappers
+        return '{}00000-0'.format(site_mappers.current_map_code)
 
     def excluded_plot(self, obj):
         """Returns True if the plot is excluded from being surveyed.
