@@ -5,7 +5,6 @@ from django.utils.decorators import method_decorator
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_dashboard.view_mixins import AppConfigViewMixin
 from edc_dashboard.views import ListboardView as BaseListboardView
-from edc_dashboard.forms import SearchForm as BaseSearchForm
 from edc_map.models import InnerContainer
 
 
@@ -15,17 +14,12 @@ from ..models import Plot
 from .wrappers import PlotWithLogEntryModelWrapper
 
 
-class SearchForm(BaseSearchForm):
-    action_url_name = django_apps.get_app_config('plot').listboard_url_name
-
-
 class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, BaseListboardView):
 
     app_config_name = 'plot'
     navbar_item_selected = 'plot'
     model = Plot
     model_wrapper_class = PlotWithLogEntryModelWrapper
-    search_form_class = SearchForm
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
