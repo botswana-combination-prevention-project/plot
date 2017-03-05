@@ -7,8 +7,9 @@ from django.db import models
 from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
 
-from edc_base.model.models import BaseUuidModel, HistoricalRecords
-from edc_base.model.validators.date import datetime_not_future
+from edc_base.model_managers import HistoricalRecords
+from edc_base.model_mixins import BaseUuidModel
+from edc_base.model_validators import datetime_not_future
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
 from edc_dashboard.model_mixins import SearchSlugManager
