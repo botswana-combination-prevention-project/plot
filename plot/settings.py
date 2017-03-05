@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'rest_framework',
+    'rest_framework.authtoken',
     'django_crypto_fields.apps.AppConfig',
     'django_revision.apps.AppConfig',
     'edc_base.apps.AppConfig',
@@ -168,5 +170,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'plot', 'media')
 DEVICE_ID = '99'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/static/'
+
+
+# edc_map
+GPS_FILE_NAME = '/Volumes/GARMIN/GPX/temp.gpx'
+GPS_DEVICE = '/Volumes/GARMIN/'
+GPX_TEMPLATE = os.path.join(STATIC_ROOT, 'edc_map/gpx/template.gpx')
 
 CURRENT_MAP_AREA = 'test_community'

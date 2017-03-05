@@ -98,6 +98,28 @@ class TestPlot(PlotMixin, TestCase):
     def test_datetime(self):
         self.assertIsNotNone(self.get_utcnow())
 
+    def test_plot_confirmation(self):
+        """Assert that confirming a plot with coorect coordinates allows
+        a plot to be confirmed=True.
+        """
+        plot_options = {'gps_target_lat': -25.330234, 'gps_target_lon': 25.556882, 'map_area': 'test_community', 'ess': True}
+        plot = self.make_plot(**plot_options)
+        self.assertFalse(plot.confirmed)
+        options = {}
+        options['report_datetime'] = options.get(
+            'report_datetime', self.get_utcnow())
+        self.add_plot_log_entry(
+            plot=plot, log_status=ACCESSIBLE,
+            **options)
+        plot.household_count = 1
+        plot.status = RESIDENTIAL_HABITABLE
+        plot.gps_confirmed_latitude = -25.330259
+        plot.gps_confirmed_longitude = 25.556885
+        plot.time_of_day = 'mornings'
+        plot.time_of_week = 'weekdays'
+        plot.save()
+        self.assertTrue(plot.confirmed)
+
     def test_plot_creates_household(self):
         """Assert creating a plot with a household count creates
         that many households.
