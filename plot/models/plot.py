@@ -1,10 +1,8 @@
 # coding=utf-8
 
-import arrow
-
+from django.apps import apps as django_apps
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import models
-from django.db.models.deletion import PROTECT
 from django_crypto_fields.fields import EncryptedCharField, EncryptedTextField
 
 from edc_base.model_managers import HistoricalRecords
@@ -18,13 +16,11 @@ from edc_map.exceptions import MapperError
 from edc_map.model_mixins import MapperModelMixin
 from edc_map.site_mappers import site_mappers
 
-from .choices import PLOT_STATUS, PLOT_LOG_STATUS, INACCESSIBILITY_REASONS
-from .constants import INACCESSIBLE
-from .exceptions import PlotEnrollmentError
-from .managers import (
-    PlotManager as BasePlotManager,
-    PlotLogManager, PlotLogEntryManager)
-from .model_mixins import (
+from ..choices import PLOT_STATUS
+from ..constants import INACCESSIBLE
+from ..exceptions import PlotEnrollmentError
+from ..managers import (PlotManager as BasePlotManager)
+from ..model_mixins import (
     PlotIdentifierModelMixin, CreateHouseholdsModelMixin,
     PlotEnrollmentMixin, PlotConfirmationMixin, SearchSlugModelMixin)
 
@@ -117,6 +113,8 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
             self.accessible = False
         else:
             if self.id:
+                PlotLogEntry = django_apps.get_model(
+                    *'plot.plotlogentry'.split('.'))
                 try:
                     PlotLogEntry.objects.get(plot_log__plot__pk=self.id)
                 except PlotLogEntry.DoesNotExist:
@@ -164,97 +162,3 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         ordering = ['-plot_identifier', ]
         unique_together = (('gps_target_lat', 'gps_target_lon'),)
         household_model = 'household.household'
-
-
-class PlotLog(BaseUuidModel):
-    """A system model to track an RA\'s attempts to confirm a Plot
-    (related).
-    """
-
-    plot = models.OneToOneField(Plot, on_delete=PROTECT)
-
-    report_datetime = models.DateTimeField(
-        verbose_name="Report date",
-        default=get_utcnow)
-
-    history = HistoricalRecords()
-
-    objects = PlotLogManager()
-
-    def __str__(self):
-        return self.plot.plot_identifier
-
-    def natural_key(self):
-        return self.plot.natural_key()
-    natural_key.dependencies = ['plot.plot']
-
-    class Meta:
-        app_label = 'plot'
-
-
-class PlotLogEntry(BaseUuidModel):
-    """A model completed by the user to track an RA\'s attempts to
-    confirm a Plot.
-    """
-
-    plot_log = models.ForeignKey(PlotLog, on_delete=PROTECT)
-
-    report_datetime = models.DateTimeField(
-        verbose_name="Report date",
-        validators=[datetime_not_future],
-        # TODO: get this validator to work
-        # validators=[datetime_not_future, date_in_survey_for_map_area],
-        default=get_utcnow)
-
-    report_date = models.DateField(
-        editable=False,
-        help_text='date value of report_datetime for unique constraint')
-
-    log_status = models.CharField(
-        verbose_name='What is the status of this plot?',
-        max_length=25,
-        choices=PLOT_LOG_STATUS)
-
-    reason = models.CharField(
-        verbose_name='If inaccessible, please indicate the reason.',
-        max_length=25,
-        blank=True,
-        null=True,
-        choices=INACCESSIBILITY_REASONS)
-
-    reason_other = models.CharField(
-        verbose_name='If Other, specify',
-        max_length=100,
-        blank=True,
-        null=True)
-
-    comment = EncryptedTextField(
-        verbose_name="Comments",
-        max_length=250,
-        null=True,
-        blank=True,
-        help_text=('IMPORTANT: Do not include any names or other '
-                   'personally identifying '
-                   'information in this comment'))
-
-    objects = PlotLogEntryManager()
-
-    history = HistoricalRecords()
-
-    def save(self, *args, **kwargs):
-        self.report_date = arrow.Arrow.fromdatetime(
-            self.report_datetime, self.report_datetime.tzinfo).to('utc').date()
-        super().save(*args, **kwargs)
-
-    def natural_key(self):
-        return (self.report_datetime, ) + self.plot_log.natural_key()
-    natural_key.dependencies = ['plot.plot_log']
-
-    def __str__(self):
-        return '{} ({})'.format(
-            self.plot_log, self.report_datetime.strftime('%Y-%m-%d'))
-
-    class Meta:
-        app_label = 'plot'
-        unique_together = ('plot_log', 'report_datetime')
-        ordering = ('report_datetime', )
