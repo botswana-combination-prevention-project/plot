@@ -4,14 +4,12 @@ from django.contrib import admin
 from django.urls.base import reverse
 from django.urls.exceptions import NoReverseMatch
 
-from edc_base.modeladmin_mixins import (
-    ModelAdminChangelistButtonMixin, audit_fieldset_tuple, audit_fields)
+from edc_base.modeladmin_mixins import audit_fieldset_tuple, audit_fields
 
 from .admin_site import plot_admin
 from .forms import PlotLogForm, PlotLogEntryForm, PlotForm
-from .models import Plot, PlotLogEntry, PlotLog
-
 from .modeladmin_mixins import ModelAdminMixin
+from .models import Plot, PlotLogEntry, PlotLog
 
 
 @admin.register(Plot, site=plot_admin)
@@ -110,11 +108,11 @@ class PlotAdmin(ModelAdminMixin):
                 'plot:listboard_url',
                 kwargs=dict(plot_identifier=obj.plot_identifier))
         except NoReverseMatch:
-            return super().view_on_site(obj)
+            return True
 
 
 @admin.register(PlotLogEntry, site=plot_admin)
-class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
+class PlotLogEntryAdmin(ModelAdminMixin):
     form = PlotLogEntryForm
     date_hierarchy = 'modified'
     fieldsets = (
@@ -130,7 +128,6 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
     list_per_page = 15
     list_display = (
         'plot_log',
-        'plots_button',
         'log_status',
         'report_datetime')
     list_filter = (
@@ -147,13 +144,6 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
         'log_status': admin.VERTICAL
     }
 
-    def plots_button(self, obj):
-        return self.button(
-            'plot:listboard_url',
-            reverse_args=(obj.plot_log.plot.plot_identifier, ),
-            label='<i class="fa fa-building-o fa-lg"></i> plot')
-    plots_button.short_description = 'plot'
-
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "plot_log":
             if request.GET.get('plot_log'):
@@ -168,7 +158,7 @@ class PlotLogEntryAdmin(ModelAdminChangelistButtonMixin, ModelAdminMixin):
                 'plot:listboard_url',
                 kwargs=dict(plot_identifier=obj.plot_log.plot.plot_identifier))
         except NoReverseMatch:
-            return super().view_on_site(obj)
+            return True
 
 
 @admin.register(PlotLog, site=plot_admin)
