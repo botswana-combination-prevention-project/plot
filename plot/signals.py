@@ -4,8 +4,8 @@ from django.apps import apps as django_apps
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
+from .constants import INACCESSIBLE, ACCESSIBLE
 from .models import Plot, PlotLog, PlotLogEntry
-from plot.constants import INACCESSIBLE, ACCESSIBLE
 
 
 @receiver(post_save, weak=False, sender=Plot,
