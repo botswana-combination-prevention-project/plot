@@ -86,7 +86,7 @@ class PlotConfirmationMixin(models.Model):
                     raise PlotEnrollmentError(
                         'Plot cannot be unconfirmed. Got plot is '
                         'already enrolled.')
-        super().common_clean()
+        return super().common_clean()
 
     @property
     def common_clean_exceptions(self):
