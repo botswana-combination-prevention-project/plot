@@ -1,0 +1,17 @@
+
+{% for wrapped in results %}
+  <!-- result is a ModelWithLogEntry wrapper -->
+  <tr>
+    <!--counter-->
+    <td>{{ forloop.counter }}</td>
+    <!--buttons-->
+
+      {% include 'plot/listboard/results/button_column.html' %}
+
+      {% include 'plot/listboard/results/columns.html' %}
+
+      {% include 'plot/listboard/results/audit_columns.html' %}
+
+  </tr>
+
+{% endfor %}
