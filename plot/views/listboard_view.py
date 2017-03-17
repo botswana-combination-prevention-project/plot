@@ -3,6 +3,7 @@ import socket
 from django.apps import apps as django_apps
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.conf import settings
 
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_dashboard.view_mixins import AppConfigViewMixin
@@ -45,6 +46,9 @@ class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, BaseListboardView):
 
     def get_queryset_filter_options(self, request, *args, **kwargs):
         options = super().get_queryset_filter_options(request, *args, **kwargs)
+        map_area = settings.CURRENT_MAP_AREA
+        options.update(
+            {'map_area': map_area})
         plot_identifier = kwargs.get('plot_identifier')
         device_name = socket.gethostname()
         if plot_identifier:
