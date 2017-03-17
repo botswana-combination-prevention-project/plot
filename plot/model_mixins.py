@@ -172,7 +172,8 @@ class PlotEnrollmentMixin(models.Model):
 
 
 class PlotIdentifierModelMixin(models.Model):
-    """Mixin to allocate a plot identifier."""
+    """Mixin to allocate a plot identifier.
+    """
 
     plot_identifier = models.CharField(
         verbose_name='Plot Identifier',
@@ -182,7 +183,8 @@ class PlotIdentifierModelMixin(models.Model):
 
     def common_clean(self):
         """Block a device without permissions from allocating a
-        plot identifier to a new instance."""
+        plot identifier to a new instance.
+        """
         if not self.id and not self.plot_identifier:
             edc_device_app_config = django_apps.get_app_config('edc_device')
             device_permissions = (
@@ -201,7 +203,8 @@ class PlotIdentifierModelMixin(models.Model):
 
     def save(self, *args, **kwargs):
         """Allocates a plot identifier to a new instance if
-        permissions allow."""
+        permissions allow.
+        """
         if not self.id and not self.plot_identifier:
             edc_device_app_config = django_apps.get_app_config(
                 'edc_device')
