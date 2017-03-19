@@ -50,14 +50,14 @@ class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, BaseListboardView):
         options.update(
             {'map_area': map_area})
         plot_identifier = kwargs.get('plot_identifier')
-        device_name = socket.gethostname()
+        device_id = socket.gethostname()[-2:]
         if plot_identifier:
             options.update(
                 {'plot_identifier': plot_identifier})
         plot_identifier_list = []
         try:
             plot_identifier_list = InnerContainer.objects.get(
-                device_name=device_name).identifier_labels
+                device_id=device_id).identifier_labels
         except InnerContainer.DoesNotExist:
             plot_identifier_list = []
         if plot_identifier_list:
