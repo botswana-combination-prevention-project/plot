@@ -234,11 +234,15 @@ class CreateHouseholdsModelMixin(models.Model):
                     'Got household count = {}. Perhaps add the '
                     'confirmation GPS point.'.format(
                         self.household_count))
-            if self.eligible_members > 0:
-                raise CreateHouseholdError(
-                    'Households cannot exist on a unconfirmed plot. '
-                    'Got eligible_members eligible_members = '
-                    '{}'.format(self.eligible_members))
+            try:
+                if self.eligible_members > 0:
+                    raise CreateHouseholdError(
+                        'Households cannot exist on a unconfirmed plot. '
+                        'Got eligible_members eligible_members = '
+                        '{}'.format(self.eligible_members))
+            except TypeError:
+                self.eligible_members = 0
+                self.common_clean()
         super().common_clean()
 
     @property
