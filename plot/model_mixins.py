@@ -72,12 +72,6 @@ class PlotConfirmationMixin(models.Model):
                         raise PlotConfirmationError(
                             'Plot cannot be confirmed. '
                             'Got plot log not created.')
-                if self.htc:
-                    # HTC is a special case, HTC plots are excluded
-                    # plots as well
-                    raise PlotConfirmationError(
-                        'Plot cannot be confirmed. Got plot is '
-                        'assigned to HTC.')
             try:
                 self.get_confirmed()
             except MapperError:
