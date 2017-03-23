@@ -121,7 +121,7 @@ class PlotLogEntryForm(CommonCleanModelFormMixin, forms.ModelForm):
         status = cleaned_data.get('log_status')
         if status == INACCESSIBLE and plot_log.plot.confirmed:
             raise forms.ValidationError(
-                {'accessible':
+                {'log_status':
                  'This plot has been \'confirmed\'. Cannot be inaccessible.'})
         if status == ACCESSIBLE:
             if cleaned_data.get('reason'):
