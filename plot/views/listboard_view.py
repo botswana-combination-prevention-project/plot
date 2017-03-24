@@ -5,22 +5,25 @@ from django.utils.decorators import method_decorator
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_dashboard.view_mixins import AppConfigViewMixin
 from edc_dashboard.views import ListboardView as BaseListboardView
+from edc_dashboard.view_mixins import ListboardFilterViewMixin
 
 
 from ..constants import RESIDENTIAL_HABITABLE
 from ..models import Plot
 from ..view_mixins import PlotQuerysetViewMixin
 
+from .listboard_filters import PlotListboardViewFilters
 from .wrappers import PlotWithLogEntryModelWrapper
 
 
-class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin,
+class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, ListboardFilterViewMixin,
                     PlotQuerysetViewMixin, BaseListboardView):
 
     app_config_name = 'plot'
     navbar_item_selected = 'plot'
     model = Plot
     model_wrapper_class = PlotWithLogEntryModelWrapper
+    listboard_view_filters = PlotListboardViewFilters()
 
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
