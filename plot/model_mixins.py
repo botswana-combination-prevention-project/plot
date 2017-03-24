@@ -72,12 +72,6 @@ class PlotConfirmationMixin(models.Model):
                         raise PlotConfirmationError(
                             'Plot cannot be confirmed. '
                             'Got plot log not created.')
-                if self.htc:
-                    # HTC is a special case, HTC plots are excluded
-                    # plots as well
-                    raise PlotConfirmationError(
-                        'Plot cannot be confirmed. Got plot is '
-                        'assigned to HTC.')
             try:
                 self.get_confirmed()
             except MapperError:
@@ -240,7 +234,8 @@ class CreateHouseholdsModelMixin(models.Model):
                     'Got household count = {}. Perhaps add the '
                     'confirmation GPS point.'.format(
                         self.household_count))
-            if self.eligible_members > 0:
+
+            if self.eligible_members:
                 raise CreateHouseholdError(
                     'Households cannot exist on a unconfirmed plot. '
                     'Got eligible_members eligible_members = '
