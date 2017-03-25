@@ -21,6 +21,7 @@ class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, ListboardFilterViewMix
 
     app_config_name = 'plot'
     navbar_item_selected = 'plot'
+    ordering = '-modified'
     model = Plot
     model_wrapper_class = PlotWithLogEntryModelWrapper
     listboard_view_filters = PlotListboardViewFilters()

@@ -53,6 +53,14 @@ class AppConfig(DjangoAppConfig):
             site_mappers.current_map_code,
             edc_device_app_config.device_id)
 
+    @property
+    def clinic_plot_identifiers(self):
+        from edc_map.site_mappers import site_mappers
+        return [
+            '{}0000-00'.format(site_mappers.current_map_code),
+            '{}00000-0'.format(site_mappers.current_map_code),
+        ]
+
     def excluded_plot(self, obj):
         """Returns True if the plot is excluded from being surveyed.
 
@@ -64,3 +72,7 @@ class AppConfig(DjangoAppConfig):
 
     def allow_add_plot(self, map_area):
         return True if map_area in self.add_plot_map_areas else False
+
+    @property
+    def study_site_name(self):
+        return None

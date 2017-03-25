@@ -63,8 +63,10 @@ class PlotQuerysetViewMixin:
     def get_queryset_exclude_options(self, request, *args, **kwargs):
         options = super().get_queryset_exclude_options(
             request, *args, **kwargs)
-        plot_identifier = django_apps.get_app_config(
-            'plot').anonymous_plot_identifier
+        app_config = django_apps.get_app_config('plot')
+        plot_identifiers = app_config.clinic_plot_identifiers
+        plot_identifiers.append(app_config.anonymous_plot_identifier)
         options.update(
-            {'{}plot_identifier'.format(self.plot_lookup_prefix): plot_identifier})
+            {'{}plot_identifier__in'.format(self.plot_lookup_prefix):
+             plot_identifiers})
         return options
