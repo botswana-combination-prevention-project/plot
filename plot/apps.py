@@ -49,7 +49,7 @@ class AppConfig(DjangoAppConfig):
     def anonymous_plot_identifier(self):
         from edc_map.site_mappers import site_mappers
         edc_device_app_config = django_apps.get_app_config('edc_device')
-        return '{}{}0000-0'.format(
+        return '{}{}00-00'.format(
             site_mappers.current_map_code,
             edc_device_app_config.device_id)
 
