@@ -55,17 +55,22 @@ class PlotListboardViewFilters(ListboardViewFilters):
         position=9,
         lookup={'access_attempts': 0})
 
-    attempts_1 = ListboardFilter(
+    attempts_gte_0 = ListboardFilter(
         label='Attempts (>0)',
         position=10,
         lookup={'access_attempts__gte': 1})
 
     attempts_1 = ListboardFilter(
-        label='Attempts (=>1)',
+        label='Attempts (1)',
         position=11,
-        lookup={'access_attempts__gte': 1})
+        lookup={'access_attempts': 1})
 
     attempts_2 = ListboardFilter(
-        label='Attempts (=>2)',
+        label='Attempts (2)',
         position=12,
-        lookup={'access_attempts__gte': 2})
+        lookup={'access_attempts': 2})
+
+    attempts_3 = ListboardFilter(
+        label='Attempts (>=3)',
+        position=13,
+        lookup={'access_attempts__gte': 3})
