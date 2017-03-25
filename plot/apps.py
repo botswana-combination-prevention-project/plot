@@ -2,7 +2,7 @@
 
 from dateutil.relativedelta import relativedelta
 
-from django.apps import AppConfig as DjangoAppConfig
+from django.apps import AppConfig as DjangoAppConfig, apps as django_apps
 from django.utils import timezone
 
 from edc_base.utils import get_utcnow
@@ -48,7 +48,10 @@ class AppConfig(DjangoAppConfig):
     @property
     def anonymous_plot_identifier(self):
         from edc_map.site_mappers import site_mappers
-        return '{}00000-0'.format(site_mappers.current_map_code)
+        edc_device_app_config = django_apps.get_app_config('edc_device')
+        return '{}{}0000-0'.format(
+            site_mappers.current_map_code,
+            edc_device_app_config.device_id)
 
     def excluded_plot(self, obj):
         """Returns True if the plot is excluded from being surveyed.
