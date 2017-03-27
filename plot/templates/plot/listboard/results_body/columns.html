@@ -3,7 +3,7 @@
 
     <!--status-->
     <td>
-      {% if wrapped.plot.confirmed %}<span class="label label-info label-sm">confirmed</span>{% else %}<span class="label label-warning label-sm">unconfirmed</span>{% endif %}
+      {% if wrapped.plot.confirmed %}<span class="label label-info label-sm">confirmed</span>{% else %}<span class="label label-warning label-sm">not confirmed</span>{% endif %}
       {% if wrapped.plot.status %}</BR><span class="label label-{% if wrapped.plot.status == RESIDENTIAL_HABITABLE %}info{% else %}default{% endif %} label-sm">{{ wrapped.plot.get_status_display }}</span>{% endif %}
       {% if wrapped.plot.enrolled %}</BR><span class="label label-success label-sm">enrolled</span>{% endif %}
     </td>
