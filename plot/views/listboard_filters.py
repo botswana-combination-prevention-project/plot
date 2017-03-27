@@ -11,66 +11,71 @@ class PlotListboardViewFilters(ListboardViewFilters):
 
     accessible = ListboardFilter(
         name='accessible',
-        position=1,
+        position=10,
         label='Accessible',
         lookup={'accessible': True})
 
     ess = ListboardFilter(
         label='ESS',
-        position=2,
+        position=20,
         lookup={'ess': True})
 
     rss = ListboardFilter(
         label='RSS',
-        position=3,
+        position=30,
         lookup={'rss': True})
 
     htc = ListboardFilter(
         label='HTC',
-        position=4,
+        position=40,
         lookup={'htc': True})
 
     enrolled = ListboardFilter(
         label='Enrolled',
-        position=5,
+        position=50,
         lookup={'enrolled': True})
 
     not_enrolled = ListboardFilter(
         label='Not enrolled',
-        position=6,
+        position=60,
         lookup={'enrolled': False})
+
+    enrolled80 = ListboardFilter(
+        label='Enrolled (from 80%)',
+        position=65,
+        lookup={'enrolled': True, 'selected__isnull': True})
 
     confirmed = ListboardFilter(
         label='Confirmed',
-        position=7,
+        position=70,
         lookup={'confirmed': True})
 
     not_confirmed = ListboardFilter(
         label='Not confirmed',
-        position=8,
+        position=80,
         lookup={'confirmed': False})
 
     attempts_0 = ListboardFilter(
         label='Attempts (0)',
-        position=9,
+        position=90,
         lookup={'access_attempts': 0})
 
     attempts_gte_0 = ListboardFilter(
         label='Attempts (>0)',
-        position=10,
+        position=100,
         lookup={'access_attempts__gte': 1})
 
     attempts_1 = ListboardFilter(
         label='Attempts (1)',
-        position=11,
+        position=110,
         lookup={'access_attempts': 1})
 
     attempts_2 = ListboardFilter(
         label='Attempts (2)',
-        position=12,
+        position=120,
         lookup={'access_attempts': 2})
 
     attempts_3 = ListboardFilter(
         label='Attempts (>=3)',
-        position=13,
+        position=130,
         lookup={'access_attempts__gte': 3})
