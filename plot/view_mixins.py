@@ -24,7 +24,8 @@ class PlotQuerysetViewMixin:
         plot_identifiers = []
         try:
             plot_identifiers = InnerContainer.objects.get(
-                device_id=device_id).identifier_labels
+                device_id=device_id,
+                map_area=site_mappers.current_map_area).identifier_labels
         except InnerContainer.DoesNotExist:
             pass
         return plot_identifiers
