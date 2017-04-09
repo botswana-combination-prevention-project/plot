@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
 from django.db.models.constants import LOOKUP_SEP
 
-from edc_device.constants import CLIENT, SERVER
+from edc_device.constants import CLIENT, SERVER, NODE_SERVER
 from edc_map.models import InnerContainer
 from edc_map.site_mappers import site_mappers
 
@@ -54,7 +54,7 @@ class PlotQuerysetViewMixin:
     def get_queryset_filter_options(self, request, *args, **kwargs):
         options = super().get_queryset_filter_options(request, *args, **kwargs)
         edc_device_app_config = django_apps.get_app_config('edc_device')
-        if edc_device_app_config.device_role in [SERVER, CLIENT]:
+        if edc_device_app_config.device_role in [SERVER, CLIENT, NODE_SERVER]:
             options = self.add_map_area_filter_options(
                 options=options, **kwargs)
         if edc_device_app_config.device_role == CLIENT:
