@@ -109,12 +109,11 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
 
     def validation_for_radius_increase(self):
         cleaned_data = self.cleaned_data
-        current_radius = Plot.objects.get(id=self.instance.id).target_radius
-        new_radius = cleaned_data.get('target_radius')
-        groups_without_permission = ['field_research_assistant', 'IT_admin',
-                                     'IT_assistant', 'lab_assistant']
-        if (self.current_user.groups.filter(name__in=groups_without_permission).exists()):
-            if new_radius != current_radius:
+        app_config = django_apps.get_app_config('plot')
+        if (not self.current_user.is_superuser
+                and not self.current_user.groups.filter(
+                    name__in=app_config.supervisor_groups).exists()):
+            if cleaned_data.get('target_radius') != self.instance.target_radius:
                 raise forms.ValidationError(
                     {'target_radius': 'You do not have the right permission '
                                       'to edit this field.'})

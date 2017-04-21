@@ -111,7 +111,7 @@ class PlotAdmin(ModelAdminMixin):
             return True
 
     def get_form(self, request, *args, **kwargs):
-        form = super(PlotAdmin, self).get_form(request, *args, **kwargs)
+        form = super().get_form(request, *args, **kwargs)
         form.current_user = request.user
         return form
 
