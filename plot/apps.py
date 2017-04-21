@@ -39,6 +39,7 @@ class AppConfig(DjangoAppConfig):
     special_locations = ['clinic', 'mobile']
     add_plot_map_areas = ['test_community']
     map_url_name = 'plot:map_url'
+    supervisor_groups = ['field_supervisor']
 
     def ready(self):
         from plot.signals import (

@@ -110,6 +110,11 @@ class PlotAdmin(ModelAdminMixin):
         except NoReverseMatch:
             return True
 
+    def get_form(self, request, *args, **kwargs):
+        form = super().get_form(request, *args, **kwargs)
+        form.current_user = request.user
+        return form
+
 
 @admin.register(PlotLogEntry, site=plot_admin)
 class PlotLogEntryAdmin(ModelAdminMixin):

@@ -3,6 +3,7 @@
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import MultipleObjectsReturned
+from django.contrib.auth.models import Group, User
 
 from edc_base.modelform_mixins import CommonCleanModelFormMixin
 from edc_constants.utils import get_display
@@ -53,6 +54,7 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
                     'to modify a plot.')
             except MultipleObjectsReturned:
                 pass
+        self.validation_for_radius_increase()
         self.household_count()
         self.eligible_members()
         self.best_time_to_visit()
@@ -104,6 +106,18 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
             if not cleaned_data.get('time_of_week'):
                 raise forms.ValidationError(
                     {'time_of_week': 'Required for if eligible members'})
+
+    def validation_for_radius_increase(self):
+        cleaned_data = self.cleaned_data
+        app_config = django_apps.get_app_config('plot')
+        if (not self.current_user.is_superuser
+                and not self.current_user.groups.filter(
+                    name__in=app_config.supervisor_groups).exists()):
+            if cleaned_data.get('target_radius') != self.instance.target_radius:
+                raise forms.ValidationError(
+                    {'target_radius': 'You do not have the right permission '
+                                      'to edit this field.'})
+        return cleaned_data
 
 
 class PlotLogForm(CommonCleanModelFormMixin, forms.ModelForm):

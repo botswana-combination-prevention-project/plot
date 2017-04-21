@@ -48,7 +48,7 @@ def update_plot_on_post_save(sender, instance, raw, created,
 
 @receiver(post_delete, weak=False, sender=PlotLogEntry,
           dispatch_uid="update_plot_on_plot_log_entry_post_delete")
-def update_plot_on_plot_log_entry_post_delete(instance, using, **kwargs):
+def update_plot_on_plot_log_entry_post_delete(sender, instance, using, **kwargs):
     plot = Plot.objects.get(pk=instance.plot_log.plot.pk)
     plot.access_attempts = (plot.access_attempts or 0) - 1
     plot.access_attempts = 0 if plot.access_attempts < 1 else plot.access_attempts
