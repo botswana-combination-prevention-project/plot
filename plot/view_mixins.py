@@ -5,6 +5,8 @@ from edc_device.constants import CLIENT, SERVER, NODE_SERVER
 from edc_map.models import InnerContainer
 from edc_map.site_mappers import site_mappers
 
+from .constants import ANONYMOUS
+
 
 class PlotQuerysetViewMixin:
 
@@ -67,7 +69,8 @@ class PlotQuerysetViewMixin:
         app_config = django_apps.get_app_config('plot')
         plot_identifiers = app_config.clinic_plot_identifiers
         plot_identifiers.append(app_config.anonymous_plot_identifier)
-        options.update(
-            {'{}plot_identifier__in'.format(self.plot_lookup_prefix):
-             plot_identifiers})
+        if not self.navbar_name == ANONYMOUS:
+            options.update(
+                {'{}plot_identifier__in'.format(self.plot_lookup_prefix):
+                 plot_identifiers})
         return options
