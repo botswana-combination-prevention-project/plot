@@ -17,8 +17,7 @@ def update_anonymous_sectioning():
 
 class Command(BaseCommand):
 
-    args = '<community name e.g otse>, file path e.g /Users/django/source/bcpp/plots.csv'
-    help = 'Closes the specified poll for voting'
+    help = 'Update inner containers by sectioning an anonymous plot'
 
     def handle(self, *args, **options):
         update_anonymous_sectioning()
