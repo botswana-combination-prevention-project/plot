@@ -3,7 +3,6 @@
 from django import forms
 from django.apps import apps as django_apps
 from django.core.exceptions import MultipleObjectsReturned
-from django.contrib.auth.models import Group, User
 
 from edc_base.modelform_mixins import CommonCleanModelFormMixin
 from edc_constants.utils import get_display
@@ -14,6 +13,10 @@ from .models import Plot, PlotLog, PlotLogEntry
 
 
 class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.current_user = None
 
     plot_identifier = forms.CharField(
         label='Plot identifier',
@@ -110,13 +113,19 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
     def validation_for_radius_increase(self):
         cleaned_data = self.cleaned_data
         app_config = django_apps.get_app_config('plot')
-        if (not self.current_user.is_superuser
-                and not self.current_user.groups.filter(
+        try:
+            is_superuser = self.current_user.is_superuser
+        except AttributeError:
+            forms.ValidationError(
+                {'target_radius': 'You do not have the right permission '
+                 'to edit this field. User unknown.'})
+        else:
+            if (not is_superuser and not self.current_user.groups.filter(
                     name__in=app_config.supervisor_groups).exists()):
-            if cleaned_data.get('target_radius') != self.instance.target_radius:
-                raise forms.ValidationError(
-                    {'target_radius': 'You do not have the right permission '
-                                      'to edit this field.'})
+                if cleaned_data.get('target_radius') != self.instance.target_radius:
+                    raise forms.ValidationError(
+                        {'target_radius': 'You do not have the right permission '
+                         'to edit this field.'})
         return cleaned_data
 
 

@@ -1,10 +1,9 @@
 from django.test import TestCase, tag
 
-from edc_dashboard.wrappers import ModelWrapperError, ModelWithLogWrapperError
+from edc_model_wrapper import ModelWrapperError, ModelWithLogWrapperError
 
 from ..models import Plot
 from ..views.wrappers import PlotWithLogEntryModelWrapper
-
 from .mixins import PlotMixin
 
 

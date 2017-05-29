@@ -4,14 +4,12 @@ from django.utils.decorators import method_decorator
 
 from edc_base.view_mixins import EdcBaseViewMixin
 from edc_dashboard.view_mixins import AppConfigViewMixin
-from edc_dashboard.views import ListboardView as BaseListboardView
 from edc_dashboard.view_mixins import ListboardFilterViewMixin
-
+from edc_dashboard.views import ListboardView as BaseListboardView
 
 from ..constants import RESIDENTIAL_HABITABLE
 from ..models import Plot
 from ..view_mixins import PlotQuerysetViewMixin
-
 from .listboard_filters import PlotListboardViewFilters
 from .wrappers import PlotWithLogEntryModelWrapper
 
@@ -34,6 +32,5 @@ class ListBoardView(AppConfigViewMixin, EdcBaseViewMixin, ListboardFilterViewMix
         context = super().get_context_data(**kwargs)
         context.update(
             RESIDENTIAL_HABITABLE=RESIDENTIAL_HABITABLE,
-            map_url_name=django_apps.get_app_config('plot').map_url_name,
-        )
+            map_url_name=django_apps.get_app_config('plot').map_url_name)
         return context
