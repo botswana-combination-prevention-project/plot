@@ -1,15 +1,15 @@
 from django.apps import apps as django_apps
 
 from edc_base.utils import get_utcnow
+from edc_map.site_mappers import site_mappers
 
 from .constants import RESIDENTIAL_HABITABLE
 from .models import Plot
-from edc_map.site_mappers import site_mappers
 
 
-def get_anonymous_plot():
-    plot_identifier = django_apps.get_app_config(
-        'plot').anonymous_plot_identifier
+def get_clinic_n_anonymous_plot(plot_identifier=None, plot_type=None, **kwargs):
+    """Return a clinic plot or an anonymous plot.
+    """
     device_id = django_apps.get_app_config(
         'edc_device').device_id
     try:
@@ -23,8 +23,8 @@ def get_anonymous_plot():
             plot_identifier=plot_identifier,
             report_datetime=get_utcnow(),
             map_area=site_mappers.current_map_area,
-            description='anonymous',
-            comment='anonymous',
+            description=plot_type,
+            comment=plot_type,
             status=RESIDENTIAL_HABITABLE,
             household_count=1,
             eligible_members=1,

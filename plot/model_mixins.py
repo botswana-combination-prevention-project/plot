@@ -7,7 +7,7 @@ from django.db.models import options
 from django.db.models.deletion import ProtectedError
 from django.db.utils import IntegrityError
 
-from edc_dashboard.model_mixins import SearchSlugModelMixin as BaseSearchSlugModelMixin
+from edc_search.model_mixins import SearchSlugModelMixin as BaseSearchSlugModelMixin
 from edc_identifier.research_identifier import ResearchIdentifier
 from edc_map.exceptions import MapperError
 from edc_map.site_mappers import site_mappers

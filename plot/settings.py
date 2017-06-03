@@ -1,23 +1,36 @@
 # coding=utf-8
 
-import sys
+import configparser
 import os
+import sys
+
+from django.core.management.color import color_style
+
 from survey.apps import S
+
+style = color_style()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
+APP_NAME = 'plot'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
-
+DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = ')78^w@s3^kt)6lu6()tomqjg#8_%!381-nx5dtu#i=kn@68h_^'
+CONFIG_FILE = '{}.conf'.format(APP_NAME)
+if DEBUG:
+    ETC_DIR = '/etc'
+else:
+    ETC_DIR = '/etc'
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+CONFIG_PATH = os.path.join(ETC_DIR, APP_NAME, CONFIG_FILE)
+sys.stdout.write(style.SUCCESS('Reading config from {}\n'.format(CONFIG_PATH)))
 
-ALLOWED_HOSTS = []
+config = configparser.RawConfigParser()
+config.read(os.path.join(CONFIG_PATH))
 
 CURRENT_SURVEYS = [
     S('example-survey.example-survey-1.annual.test_community'),
@@ -180,3 +193,14 @@ GPS_DEVICE = '/Volumes/GARMIN/'
 GPX_TEMPLATE = os.path.join(STATIC_ROOT, 'edc_map/gpx/template.gpx')
 
 CURRENT_MAP_AREA = 'test_community'
+
+KEY_PATH = '/Volumes/crypto_keys'
+
+CURRENT_MAP_AREA = config['edc_map'].get('map_area', 'test_community')
+DEVICE_ID = config['edc_device'].get('device_id', '99')
+DEVICE_ROLE = config['edc_device'].get('role')
+LABEL_PRINTER = config['edc_label'].get('label_printer', 'label_printer')
+SURVEY_GROUP_NAME = config['survey'].get('group_name')
+SURVEY_SCHEDULE_NAME = config['survey'].get('schedule_name')
+ANONYMOUS_ENABLED = config['bcpp'].get('anonymous_enabled')
+DEVICE_IDS = [d.strip() for d in config['edc_map'].get('device_ids').split(',')]
