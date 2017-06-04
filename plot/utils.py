@@ -15,10 +15,14 @@ def get_clinic_n_anonymous_plot(plot_identifier=None, plot_type=None, **kwargs):
     try:
         plot = Plot.objects.get(plot_identifier=plot_identifier)
     except Plot.DoesNotExist:
-        lat = (site_mappers.current_mapper.center_lat
-               + float('.000000{}'.format(device_id)))
-        lon = (site_mappers.current_mapper.center_lon
-               + float('.000000{}'.format(device_id)))
+        if plot_type == 'anonymous':
+            lat = (site_mappers.current_mapper.center_lat
+                   + float('.000000{}'.format(device_id)))
+            lon = (site_mappers.current_mapper.center_lon
+                   + float('.000000{}'.format(device_id)))
+        elif plot_type == 'clinic':
+            lat = site_mappers.current_mapper.clinic_lat
+            lon = site_mappers.current_mapper.clinic_lon
         plot = Plot.objects.create(
             plot_identifier=plot_identifier,
             report_datetime=get_utcnow(),
