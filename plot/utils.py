@@ -7,28 +7,26 @@ from .constants import RESIDENTIAL_HABITABLE
 from .models import Plot
 
 
-def get_clinic_n_anonymous_plot(plot_identifier=None, plot_type=None, **kwargs):
+def get_anonymous_plot(**kwargs):
     """Return a clinic plot or an anonymous plot.
     """
     device_id = django_apps.get_app_config(
         'edc_device').device_id
+    plot_identifier = django_apps.get_app_config(
+        'plot').anonymous_plot_identifier
     try:
         plot = Plot.objects.get(plot_identifier=plot_identifier)
     except Plot.DoesNotExist:
-        if plot_type == 'anonymous':
-            lat = (site_mappers.current_mapper.center_lat
-                   + float('.000000{}'.format(device_id)))
-            lon = (site_mappers.current_mapper.center_lon
-                   + float('.000000{}'.format(device_id)))
-        elif plot_type == 'clinic':
-            lat = site_mappers.current_mapper.clinic_lat
-            lon = site_mappers.current_mapper.clinic_lon
+        lat = (site_mappers.current_mapper.center_lat
+               + float('.000000{}'.format(device_id)))
+        lon = (site_mappers.current_mapper.center_lon
+               + float('.000000{}'.format(device_id)))
         plot = Plot.objects.create(
             plot_identifier=plot_identifier,
             report_datetime=get_utcnow(),
             map_area=site_mappers.current_map_area,
-            description=plot_type,
-            comment=plot_type,
+            description='anonymous',
+            comment='anonymous',
             status=RESIDENTIAL_HABITABLE,
             household_count=1,
             eligible_members=1,
