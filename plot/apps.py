@@ -52,13 +52,13 @@ class AppConfig(DjangoAppConfig):
         edc_device_app_config = django_apps.get_app_config('edc_device')
         return f'{site_mappers.current_map_code}{edc_device_app_config.device_id}00-00'
 
-    @property
-    def clinic_plot_identifiers(self):
-        from edc_map.site_mappers import site_mappers
-        return [
-            f'{site_mappers.current_map_code}0000-00',
-            f'{site_mappers.current_map_code}00000-0',
-        ]
+#     @property
+#     def clinic_plot_identifiers(self):
+#         from edc_map.site_mappers import site_mappers
+#         return [
+#             f'{site_mappers.current_map_code}0000-00',
+#             f'{site_mappers.current_map_code}00000-0',
+#         ]
 
     def excluded_plot(self, obj):
         """Returns True if the plot is excluded from being surveyed.

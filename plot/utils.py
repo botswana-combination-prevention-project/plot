@@ -7,11 +7,13 @@ from .constants import RESIDENTIAL_HABITABLE
 from .models import Plot
 
 
-def get_anonymous_plot():
-    plot_identifier = django_apps.get_app_config(
-        'plot').anonymous_plot_identifier
+def get_anonymous_plot(**kwargs):
+    """Return a clinic plot or an anonymous plot.
+    """
     device_id = django_apps.get_app_config(
         'edc_device').device_id
+    plot_identifier = django_apps.get_app_config(
+        'plot').anonymous_plot_identifier
     try:
         plot = Plot.objects.get(plot_identifier=plot_identifier)
     except Plot.DoesNotExist:
