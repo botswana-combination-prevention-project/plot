@@ -10,19 +10,18 @@ from edc_base.model_mixins import BaseUuidModel
 from edc_base.model_validators import datetime_not_future
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
-from edc_dashboard.model_mixins import SearchSlugManager
 from edc_device.model_mixins import DeviceModelMixin
 from edc_map.exceptions import MapperError
 from edc_map.model_mixins import MapperModelMixin
 from edc_map.site_mappers import site_mappers
+from edc_search.model_mixins import SearchSlugModelMixin, SearchSlugManager
 
 from ..choices import PLOT_STATUS
 from ..constants import INACCESSIBLE
 from ..exceptions import PlotEnrollmentError
-from ..managers import (PlotManager as BasePlotManager)
-from ..model_mixins import (
-    PlotIdentifierModelMixin, CreateHouseholdsModelMixin,
-    PlotEnrollmentMixin, PlotConfirmationMixin, SearchSlugModelMixin)
+from ..managers import PlotManager as BasePlotManager
+from ..model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin
+from ..model_mixins import PlotEnrollmentMixin, PlotConfirmationMixin
 
 
 class PlotManager(BasePlotManager, SearchSlugManager):
@@ -35,6 +34,7 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
     """A model created by the system and updated by the user to
     represent a Plot in the community.
     """
+    search_slug_fields = ['plot_identifier', 'map_area', 'cso_number']
 
     report_datetime = models.DateTimeField(
         validators=[datetime_not_future],

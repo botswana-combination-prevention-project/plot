@@ -3,10 +3,11 @@
 from dateutil.relativedelta import relativedelta
 from model_mommy import mommy
 
+from edc_base.utils import get_utcnow
+
 from ..constants import ACCESSIBLE, RESIDENTIAL_HABITABLE
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
-from edc_base.utils import get_utcnow
 
 
 class PlotTestMixin:

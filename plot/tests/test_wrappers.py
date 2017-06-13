@@ -7,49 +7,50 @@ from ..views.wrappers import PlotWithLogEntryModelWrapper
 from .mixins import PlotMixin
 
 
+@tag('wrappers')
 class TestWrappers(PlotMixin, TestCase):
 
     def setUp(self):
         self.plot = self.make_confirmed_plot()
 
     def test_plot_wrapper(self):
-        PlotWithLogEntryModelWrapper(self.plot)
+        PlotWithLogEntryModelWrapper(model_obj=self.plot)
 
     def test_plot_wrapper_model_names(self):
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         self.assertEqual(wrapped.plot, self.plot)
 
     def test_plot_wrapper_rel_names(self):
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         self.assertEqual(
             wrapped.log_rel_attrs,
             ['plotlog', 'plotlogentry_set'])
 
     def test_plot_wrapper_aliases(self):
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         self.assertIsNotNone(wrapped.log)
         self.assertIsNotNone(wrapped.log_entry)
         self.assertIsNotNone(wrapped.log_entries)
 
     def test_plot_wrapper_log_entries(self):
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         self.assertEqual(self.plot.plotlog.plotlogentry_set.all().count(), 1)
         self.assertEqual(len(wrapped.log_entries), 1)
 
     def test_plot_wrapper_next_urls(self):
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         self.assertIsNotNone(wrapped.log_entry.next_url)
         self.assertIsNotNone(wrapped.log_entry.extra_querystring)
 
     def test_does_not_wrap_empty_objects(self):
         class TestEmpty:
             pass
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         self.assertRaises(
             ModelWrapperError, wrapped.model_wrapper_class, TestEmpty())
 
     def test_wraps_empty_models(self):
-        wrapped = PlotWithLogEntryModelWrapper(self.plot)
+        wrapped = PlotWithLogEntryModelWrapper(model_obj=self.plot)
         try:
             wrapped.model_wrapper_class(Plot())
         except (ModelWrapperError) as e:

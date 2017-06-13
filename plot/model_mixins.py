@@ -7,17 +7,15 @@ from django.db.models import options
 from django.db.models.deletion import ProtectedError
 from django.db.utils import IntegrityError
 
-from edc_dashboard.model_mixins import SearchSlugModelMixin as BaseSearchSlugModelMixin
 from edc_identifier.research_identifier import ResearchIdentifier
 from edc_map.exceptions import MapperError
 from edc_map.site_mappers import site_mappers
 
 from .choices import SELECTED
 from .constants import TWENTY_PERCENT, FIVE_PERCENT
-from .exceptions import (
-    MaxHouseholdsExceededError, PlotIdentifierError,
-    PlotConfirmationError, PlotEnrollmentError,
-    CreateHouseholdError, PlotCreateError)
+from .exceptions import CreateHouseholdError, PlotCreateError
+from .exceptions import MaxHouseholdsExceededError, PlotIdentifierError
+from .exceptions import PlotConfirmationError, PlotEnrollmentError
 
 
 if 'household_model' not in options.DEFAULT_NAMES:
@@ -28,20 +26,6 @@ class PlotIdentifier(ResearchIdentifier):
 
     template = '{map_code}{sequence}'
     label = 'plot_identifier'
-
-
-class SearchSlugModelMixin(BaseSearchSlugModelMixin):
-
-    def get_slugs(self):
-        slugs = super().get_slugs()
-        return slugs + [
-            self.plot_identifier or '',
-            self.map_area or '',
-            self.cso_number or '',
-        ]
-
-    class Meta:
-        abstract = True
 
 
 class PlotConfirmationMixin(models.Model):
@@ -136,8 +120,8 @@ class PlotEnrollmentMixin(models.Model):
                     'Plot cannot be enrolled. Plot cannot be assigned '
                     'to both HTC and RSS.')
             else:
-                raise PlotCreateError('Plot cannot be assigned to both '
-                                      'HTC and RSS.')
+                raise PlotCreateError(
+                    'Plot cannot be assigned to both HTC and RSS.')
         if self.ess and any([self.htc, self.rss, self.selected]):
             raise PlotEnrollmentError(
                 'Plot cannot be an ESS plot. Check value of RSS, HTC '
@@ -187,8 +171,7 @@ class PlotIdentifierModelMixin(models.Model):
             if not device_permissions.may_add(edc_device_app_config.role):
                 raise PlotIdentifierError(
                     'Blocking attempt to create plot identifier. '
-                    'Got device \'{}\'.'.format(
-                        edc_device_app_config.role))
+                    f'Got device \'{edc_device_app_config.role}\'.')
         super().common_clean()
 
     @property
@@ -230,16 +213,15 @@ class CreateHouseholdsModelMixin(models.Model):
         if not (self.gps_confirmed_longitude and self.gps_confirmed_latitude):
             if self.household_count > 0:
                 raise CreateHouseholdError(
-                    'Households cannot exist on a unconfirmed plot. '
-                    'Got household count = {}. Perhaps add the '
-                    'confirmation GPS point.'.format(
-                        self.household_count))
+                    f'Households cannot exist on a unconfirmed plot. '
+                    f'Got household count = {self.household_count}. Perhaps '
+                    f'add the confirmation GPS point.')
 
             if self.eligible_members:
                 raise CreateHouseholdError(
                     'Households cannot exist on a unconfirmed plot. '
                     'Got eligible_members eligible_members = '
-                    '{}'.format(self.eligible_members))
+                    f'{self.eligible_members}')
         super().common_clean()
 
     @property
@@ -257,8 +239,8 @@ class CreateHouseholdsModelMixin(models.Model):
 
         if self.household_count > app_config.max_households:
             raise MaxHouseholdsExceededError(
-                'Number of households per plot cannot exceed {}. '
-                'See plot.AppConfig'.format(app_config.max_households))
+                f'Number of households per plot cannot exceed '
+                f'{app_config.max_households}. See plot.AppConfig')
 
         if self.gps_confirmed_longitude and self.gps_confirmed_latitude:
             Household = django_apps.get_model(

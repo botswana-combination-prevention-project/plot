@@ -102,7 +102,8 @@ class TestPlot(PlotMixin, TestCase):
         """Assert that confirming a plot with coorect coordinates allows
         a plot to be confirmed=True.
         """
-        plot_options = {'gps_target_lat': -25.330234, 'gps_target_lon': 25.556882, 'map_area': 'test_community', 'ess': True}
+        plot_options = {'gps_target_lat': -25.330234,
+                        'gps_target_lon': 25.556882, 'map_area': 'test_community', 'ess': True}
         plot = self.make_plot(**plot_options)
         self.assertFalse(plot.confirmed)
         options = {}

@@ -1,10 +1,10 @@
 from django.apps import apps as django_apps
 
 from edc_base.utils import get_utcnow
+from edc_map.site_mappers import site_mappers
 
 from .constants import RESIDENTIAL_HABITABLE
 from .models import Plot
-from edc_map.site_mappers import site_mappers
 
 
 def get_anonymous_plot():

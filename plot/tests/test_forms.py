@@ -2,17 +2,14 @@ from django.apps import apps as django_apps
 from django.test import TestCase, tag
 from model_mommy import mommy
 
+from ..constants import ACCESSIBLE, RESIDENTIAL_HABITABLE, RESIDENTIAL_NOT_HABITABLE
 from ..forms import PlotForm, PlotLogEntryForm
-from ..models import PlotLog
-
-from ..constants import (
-    ACCESSIBLE, RESIDENTIAL_HABITABLE, RESIDENTIAL_NOT_HABITABLE)
-from ..models import PlotLogEntry
+from ..models import PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
-
 from .mixins import PlotMixin
 
 
+@tag('forms')
 class TestFormsNoAdd(PlotMixin, TestCase):
 
     def setUp(self):

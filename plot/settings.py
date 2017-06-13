@@ -19,11 +19,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-CURRENT_SURVEYS = [
-    S('example-survey.example-survey-1.annual.test_community'),
-    S('example-survey.example-survey-2.annual.test_community'),
-    S('example-survey.example-survey-3.annual.test_community')
-]
 
 # Application definition
 INSTALLED_APPS = [
@@ -34,23 +29,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
-    'rest_framework',
-    'rest_framework.authtoken',
+    # 'rest_framework',
+    # 'rest_framework.authtoken',
     'django_crypto_fields.apps.AppConfig',
     'django_revision.apps.AppConfig',
     'edc_base.apps.AppConfig',
-    'edc_consent.apps.AppConfig',
+    # 'edc_consent.apps.AppConfig',
+    'edc_device.apps.AppConfig',
     'edc_identifier.apps.AppConfig',
     'edc_protocol.apps.AppConfig',
-    'edc_sync.apps.AppConfig',
-    'member.apps.AppConfig',
-    'example_survey.apps.EdcMapAppConfig',
-    'household.apps.AppConfig',
+    # 'edc_sync.apps.AppConfig',
+    # 'member.apps.AppConfig',
+    # 'example_survey.apps.EdcMapAppConfig',
+    # 'household.apps.AppConfig',
+    'edc_search.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.AppConfig',
-    'example_survey.apps.EdcBaseTestAppConfig',
-    'example_survey.apps.AppConfig',
-    'example_survey.apps.EdcDeviceAppConfig',
+    'edc_map.apps.AppConfig',
+    # 'example_survey.apps.EdcBaseTestAppConfig',
+    # 'example_survey.apps.AppConfig',
+    # 'example_survey.apps.EdcDeviceAppConfig',
 ]
 
 # if 'test' in sys.argv:
@@ -148,7 +146,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

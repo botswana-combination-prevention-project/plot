@@ -5,32 +5,30 @@ from edc_model_wrapper import ModelWrapper, ModelWithLogWrapper
 
 class PlotModelWrapper(ModelWrapper):
 
-    next_url_name = django_apps.get_app_config('plot').listboard_url_name
     model_name = 'plot.plot'
-    extra_querystring_attrs = {}
-    next_url_attrs = {'plot.plot': ['plot_identifier']}
-    url_instance_attrs = ['plot_identifier']
+    next_url_name = django_apps.get_app_config('plot').listboard_url_name
+    next_url_attrs = ['plot_identifier']
 
 
 class PlotLogEntryModelWrapper(ModelWrapper):
 
-    next_url_name = django_apps.get_app_config('plot').listboard_url_name
     model_name = 'plot.plotlogentry'
-    extra_querystring_attrs = {'plot.plotlogentry': ['plot_log']}
-    next_url_attrs = {'plot.plotlogentry': ['plot_identifier']}
-    url_instance_attrs = ['plot_log', 'plot_identifier']
+    next_url_name = django_apps.get_app_config('plot').listboard_url_name
+    next_url_attrs = ['plot_identifier']
+    querystring_attrs = ['plot_log']
 
     @property
     def plot_identifier(self):
-        return self._original_object.plot_log.plot.plot_identifier
+        return self.object.plot_log.plot.plot_identifier
 
 
 class PlotWithLogEntryModelWrapper(ModelWithLogWrapper):
 
-    next_url_name = django_apps.get_app_config('plot').listboard_url_name
+    model_name = 'plot.plot'
     model_wrapper_class = PlotModelWrapper
     log_entry_model_wrapper_class = PlotLogEntryModelWrapper
+    next_url_name = django_apps.get_app_config('plot').listboard_url_name
 
     @property
     def plot_identifier(self):
-        return self._original_object.plot_identifier
+        return self.object.plot_identifier

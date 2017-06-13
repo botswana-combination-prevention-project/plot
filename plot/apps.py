@@ -50,16 +50,14 @@ class AppConfig(DjangoAppConfig):
     def anonymous_plot_identifier(self):
         from edc_map.site_mappers import site_mappers
         edc_device_app_config = django_apps.get_app_config('edc_device')
-        return '{}{}00-00'.format(
-            site_mappers.current_map_code,
-            edc_device_app_config.device_id)
+        return f'{site_mappers.current_map_code}{edc_device_app_config.device_id}00-00'
 
     @property
     def clinic_plot_identifiers(self):
         from edc_map.site_mappers import site_mappers
         return [
-            '{}0000-00'.format(site_mappers.current_map_code),
-            '{}00000-0'.format(site_mappers.current_map_code),
+            f'{site_mappers.current_map_code}0000-00',
+            f'{site_mappers.current_map_code}00000-0',
         ]
 
     def excluded_plot(self, obj):
