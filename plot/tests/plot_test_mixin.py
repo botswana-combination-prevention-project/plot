@@ -27,7 +27,7 @@ class PlotTestMixin:
         except KeyError:
             pass
         opts['report_datetime'] = options.get(
-            'report_datetime', self.get_utcnow())
+            'report_datetime', get_utcnow())
         plot = mommy.make_recipe(
             'plot.plot',
             plot_identifier=None,
@@ -58,7 +58,7 @@ class PlotTestMixin:
         plot = self.make_plot(**options)
 
         options['report_datetime'] = options.get(
-            'report_datetime', self.get_utcnow())
+            'report_datetime', get_utcnow())
 
         self.add_plot_log_entry(
             plot=plot, log_status=ACCESSIBLE,

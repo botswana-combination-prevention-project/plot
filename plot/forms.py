@@ -6,10 +6,9 @@ from django.core.exceptions import MultipleObjectsReturned
 
 from edc_base.modelform_mixins import CommonCleanModelFormMixin
 from edc_constants.utils import get_display
-
-from .choices import PLOT_STATUS
-from .constants import INACCESSIBLE, ACCESSIBLE, RESIDENTIAL_HABITABLE
-from .models import Plot, PlotLog, PlotLogEntry
+from plot.choices import PLOT_STATUS
+from plot.constants import INACCESSIBLE, ACCESSIBLE, RESIDENTIAL_HABITABLE
+from plot.models import Plot, PlotLog, PlotLogEntry
 
 
 class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
@@ -42,11 +41,11 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
                         'Only {} plots may be added.'.format(
                             get_display(PLOT_STATUS, RESIDENTIAL_HABITABLE)))
         else:
-            if cleaned_data.get('location_name') in app_config.special_locations:
+            location_name = cleaned_data.get('location_name')
+            if location_name in app_config.special_locations:
                 raise forms.ValidationError(
-                    'Plot may not be changed by a user. Plot location '
-                    'name == \'{}\''.format(
-                        cleaned_data.get('location_name')))
+                    f'Plot may not be changed by a user. Plot location '
+                    f'name == \'{location_name}\'')
             try:
                 PlotLogEntry.objects.exclude(
                     log_status=INACCESSIBLE).get(

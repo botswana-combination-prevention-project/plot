@@ -38,7 +38,7 @@ class PlotConfirmationMixin(models.Model):
                     'Blocking attempt to confirm non-ESS plot on add.')
         else:
             if self.gps_confirmed_latitude and self.gps_confirmed_longitude:
-                self.get_confirmed()
+                self.get_confirmed()  # confirmation point is within the radius
                 try:
                     PlotLog = django_apps.get_model(*'plot.plotlog'.split('.'))
                     PlotLog.objects.get(plot__pk=self.id)
@@ -183,12 +183,11 @@ class PlotIdentifierModelMixin(models.Model):
         permissions allow.
         """
         if not self.id and not self.plot_identifier:
-            edc_device_app_config = django_apps.get_app_config(
-                'edc_device')
+            edc_device_app_config = django_apps.get_app_config('edc_device')
             device_permissions = (
                 edc_device_app_config.device_permissions.get(
                     self._meta.label_lower))
-            if device_permissions.may_add(edc_device_app_config.role):
+            if device_permissions and device_permissions.may_add(edc_device_app_config.role):
                 if not self.id:
                     self.plot_identifier = PlotIdentifier(
                         map_code=site_mappers.get_mapper(

@@ -1,4 +1,5 @@
 # coding=utf-8
+import sys
 
 from dateutil.relativedelta import relativedelta
 
@@ -27,19 +28,16 @@ class Enrollment:
 
 class AppConfig(DjangoAppConfig):
     name = 'plot'
-    listboard_template_name = 'plot/listboard.html'
-    listboard_url_name = 'plot:listboard_url'
-    base_template_name = 'edc_base/base.html'
-    url_namespace = 'plot'  # FIXME: is this still neeed??
     admin_site_name = 'plot_admin'
     enrollment = Enrollment(
         timezone.now() - relativedelta(years=1),
         timezone.now() + relativedelta(years=1))
     max_households = 9
     special_locations = ['clinic', 'mobile']
-    add_plot_map_areas = ['test_community']
-    map_url_name = 'plot:map_url'
+    add_plot_map_areas = ['test_community']  # FIXME: is this used????
     supervisor_groups = ['field_supervisor']
+
+    listboard_url_name = 'plot_dashboard:listboard_url'
 
     def ready(self):
         from plot.signals import (
@@ -75,3 +73,31 @@ class AppConfig(DjangoAppConfig):
     @property
     def study_site_name(self):
         return None
+
+
+if 'test' in sys.argv or 'shell' in sys.argv:
+    from django.conf import settings
+    from edc_map.apps import AppConfig as BaseEdcMapAppConfig
+    from edc_device.apps import AppConfig as BaseEdcDeviceAppConfig, DevicePermission
+    from edc_device.constants import CENTRAL_SERVER, CLIENT, NODE_SERVER
+
+    class EdcMapAppConfig(BaseEdcMapAppConfig):
+        verbose_name = 'Test Mappers'
+        mapper_model = 'plot.plot'
+        landmark_model = []
+        verify_point_on_save = False
+        zoom_levels = ['14', '15', '16', '17', '18']
+        identifier_field_attr = 'plot_identifier'
+        # Extra filter boolean attribute name.
+        extra_filter_field_attr = 'enrolled'
+
+    class EdcDeviceAppConfig(BaseEdcDeviceAppConfig):
+        use_settings = True
+        device_id = settings.DEVICE_ID
+        device_role = settings.DEVICE_ROLE
+        device_permissions = {
+            'plot.plot': DevicePermission(
+                model='plot.plot',
+                create_roles=[CENTRAL_SERVER, CLIENT],
+                change_roles=[NODE_SERVER, CENTRAL_SERVER, CLIENT])
+        }

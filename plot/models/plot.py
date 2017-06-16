@@ -128,13 +128,9 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
 
     def common_clean(self):
         if self.map_area not in site_mappers.map_areas:
-            msg = (
-                'Invalid map area. Valid map areas are %(map_areas)s. '
-                'Got %(map_area)s')
-            params = {'map_area': self.map_area,
-                      'map_areas': ', '.join(site_mappers.map_areas)}
-            field = 'map_area'
-            raise MapperError(msg.format(**params), field, params, msg)
+            raise MapperError(
+                f'Invalid map area. Got \'{self.map_area}\'. Site mapper expects one '
+                f'of map_areas={site_mappers.map_areas}.')
         if self.id:
             try:
                 self.get_confirmed()
