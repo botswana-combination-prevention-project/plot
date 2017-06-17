@@ -327,6 +327,28 @@ class TestPlot(PlotTestMixin, TestCase):
         plot = Plot.objects.get(pk=plot_log_entry.plot_log.plot.pk)
         self.assertTrue(plot.accessible)
 
+    def test_plot_log_entry_str(self):
+        plot = self.make_confirmed_plot()
+        plot_log_entry = PlotLogEntry.objects.get(plot_log__plot=plot)
+        self.assertTrue(str(plot_log_entry))
+
+    def test_plot_log_str(self):
+        plot = self.make_confirmed_plot()
+        plot_log = PlotLog.objects.get(plot=plot)
+        self.assertTrue(str(plot_log))
+
+    def test_plot_str(self):
+        plot = self.make_confirmed_plot()
+        self.assertTrue(str(plot))
+
+    def test_plot_identifier_segment(self):
+        plot = self.make_confirmed_plot()
+        self.assertIsNotNone(plot.identifier_segment)
+
+    def test_plot_identifier_community(self):
+        plot = self.make_confirmed_plot()
+        self.assertIsNotNone(plot.community)
+
 
 class TestNaturalKey(SyncTestSerializerMixin, PlotTestMixin, TestCase):
 

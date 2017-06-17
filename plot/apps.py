@@ -38,7 +38,7 @@ class AppConfig(DjangoAppConfig):
         timezone.now() + relativedelta(years=1))
     max_households = 9
     special_locations = ['clinic', 'mobile']  # see plot.location_name
-    add_plot_map_areas = ['test_community']  # FIXME: is this used????
+    add_plot_map_areas = ['test_community']
     supervisor_groups = ['field_supervisor']
 
     listboard_url_name = 'plot_dashboard:listboard_url'

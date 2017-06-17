@@ -26,7 +26,7 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
         cleaned_data = super().clean()
         app_config = django_apps.get_app_config('plot')
         form_validator = PlotFormValidator(
-            allow_add_plot_map_areas=app_config.allow_add_plot_map_areas,
+            add_plot_map_areas=app_config.add_plot_map_areas,
             special_locations=app_config.special_locations,
             supervisor_groups=app_config.supervisor_groups,
             current_user=self.current_user,
