@@ -1,10 +1,14 @@
 # coding=utf-8
+
+import os
 import sys
 
 from dateutil.relativedelta import relativedelta
 
 from django.apps import AppConfig as DjangoAppConfig, apps as django_apps
 from django.utils import timezone
+from django.conf import settings
+from django.core.management.color import color_style
 
 from edc_base.utils import get_utcnow
 from edc_constants.constants import CLOSED, OPEN
@@ -33,7 +37,7 @@ class AppConfig(DjangoAppConfig):
         timezone.now() - relativedelta(years=1),
         timezone.now() + relativedelta(years=1))
     max_households = 9
-    special_locations = ['clinic', 'mobile']
+    special_locations = ['clinic', 'mobile']  # see plot.location_name
     add_plot_map_areas = ['test_community']  # FIXME: is this used????
     supervisor_groups = ['field_supervisor']
 
@@ -67,19 +71,18 @@ class AppConfig(DjangoAppConfig):
             excluded_plot = True
         return excluded_plot
 
-    def allow_add_plot(self, map_area):
-        return True if map_area in self.add_plot_map_areas else False
-
     @property
     def study_site_name(self):
         return None
 
 
-if 'test' in sys.argv or 'shell' in sys.argv:
-    from django.conf import settings
+if settings.APP_NAME == 'plot':
+
     from edc_map.apps import AppConfig as BaseEdcMapAppConfig
     from edc_device.apps import AppConfig as BaseEdcDeviceAppConfig, DevicePermission
     from edc_device.constants import CENTRAL_SERVER, CLIENT, NODE_SERVER
+    from survey.apps import AppConfig as BaseSurveyAppConfig
+    from survey import S
 
     class EdcMapAppConfig(BaseEdcMapAppConfig):
         verbose_name = 'Test Mappers'

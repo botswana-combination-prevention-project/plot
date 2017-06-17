@@ -1,7 +1,7 @@
 from django.test import TestCase, tag
 
 from edc_map.site_mappers import site_mappers
-from edc_model_wrapper import ModelWrapperError, ModelWithLogWrapperError
+from edc_model_wrapper import ModelWrapperError
 
 from ..model_wrappers import PlotWithLogEntryModelWrapper
 from ..models import Plot

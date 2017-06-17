@@ -127,11 +127,14 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         return (self.plot_identifier, )
 
     def common_clean(self):
+        """Asserts the plot map_area is a valid map_area and that
+        an enrolled plot cannot be unconfirmed.
+        """
         if self.map_area not in site_mappers.map_areas:
             raise MapperError(
                 f'Invalid map area. Got \'{self.map_area}\'. Site mapper expects one '
                 f'of map_areas={site_mappers.map_areas}.')
-        if self.id:
+        elif self.id:
             try:
                 self.get_confirmed()
             except MapperError:

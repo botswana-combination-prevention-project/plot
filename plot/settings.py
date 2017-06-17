@@ -1,22 +1,22 @@
 # coding=utf-8
 
-import configparser
 import os
 import sys
 from pathlib import PurePath
 from django.core.management.color import color_style
 
-from survey.apps import S
-from edc_device.constants import NODE_SERVER, CENTRAL_SERVER
+from edc_device.constants import CENTRAL_SERVER
 
 style = color_style()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ETC_DIR = os.path.join(str(PurePath(BASE_DIR).parent), 'etc')
 
 APP_NAME = 'plot'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
+
 DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = ')78^w@s3^kt)6lu6()tomqjg#8_%!381-nx5dtu#i=kn@68h_^'
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'edc_protocol.apps.AppConfig',
     'household.apps.AppConfig',
     'edc_search.apps.AppConfig',
+    'edc_sync.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.EdcDeviceAppConfig',
     'plot.apps.EdcMapAppConfig',
@@ -92,6 +93,14 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {
+#             'read_default_file': os.path.join(ETC_DIR, 'mysql_test.conf'),
+#         },
+#     },
+# }
 
 
 # Password validation
@@ -150,20 +159,14 @@ GPX_TEMPLATE = os.path.join(STATIC_ROOT, 'edc_map/gpx/template.gpx')
 
 
 if 'test' in sys.argv:
-    MIGRATION_MODULES = {
-        "django_crypto_fields": None,
-        "edc_identifier": None,
-        "edc_metadata": None,
-        "edc_registration": None,
-        "edc_sync": None,
-        "plot": None,
-        "household": None,
-        "survey": None,
-        'admin': None,
-        "auth": None,
-        'contenttypes': None,
-        'sessions': None,
-    }
 
-    PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher', )
+    class DisableMigrations:
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = DisableMigrations()
+    PASSWORD_HASHERS = ('django.contrib.auth.hashers.MD5PasswordHasher', )
     DEFAULT_FILE_STORAGE = 'inmemorystorage.InMemoryStorage'
