@@ -16,7 +16,11 @@ def create_ess_plots(points, map_area):
         longitude = point[1]
         number_of_points += 1
         try:
-            Plot.objects.create(gps_target_lat=latitude, gps_target_lon=longitude, map_area=map_area, ess=True)
+            Plot.objects.create(
+                gps_target_lat=latitude,
+                gps_target_lon=longitude,
+                map_area=map_area,
+                ess=True)
             print(number_of_points, "number of plots created")
         except IntegrityError:
             pass
@@ -24,11 +28,13 @@ def create_ess_plots(points, map_area):
 
 class Command(BaseCommand):
 
-    args = '<community name e.g otse>, file path e.g /Users/django/source/bcpp/plots.csv'
+    args = (
+        '<community name e.g otse>, file path e.g /Users/django/source/bcpp/plots.csv')
     help = 'Closes the specified poll for voting'
 
     def handle(self, *args, **options):
-        fname = '/Users/django/source/pair9/plot_list_metsimotlhabe_75pct_update_201504011622.csv'
+        fname = (
+            '/Users/django/source/pair9/plot_list_metsimotlhabe_75pct_update_201504011622.csv')
         map_area = 'test_community'
         f = open(fname, 'r')
         data = f.readlines()

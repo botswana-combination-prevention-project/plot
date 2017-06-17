@@ -4,9 +4,9 @@ from django import forms
 from django.apps import apps as django_apps
 
 from edc_base.modelform_mixins import CommonCleanModelFormMixin
-from plot_form_validators import PlotFormValidator
 
-from .constants import INACCESSIBLE, ACCESSIBLE
+from plot_form_validators import PlotFormValidator, PlotLogEntryFormValidator
+
 from .models import Plot, PlotLog, PlotLogEntry
 
 
@@ -50,20 +50,11 @@ class PlotLogForm(CommonCleanModelFormMixin, forms.ModelForm):
 class PlotLogEntryForm(CommonCleanModelFormMixin, forms.ModelForm):
 
     def clean(self):
-        cleaned_data = super(PlotLogEntryForm, self).clean()
-        plot_log = cleaned_data.get('plot_log')
-        status = cleaned_data.get('log_status')
-        if status == INACCESSIBLE and plot_log.plot.confirmed:
-            raise forms.ValidationError(
-                {'log_status':
-                 'This plot has been \'confirmed\'. Cannot be inaccessible.'})
-        if status == ACCESSIBLE:
-            if cleaned_data.get('reason'):
-                raise forms.ValidationError(
-                    {'reason': 'Reason is not required if accessible.'})
-            if cleaned_data.get('reason_other'):
-                raise forms.ValidationError(
-                    {'reason_other': 'Not required if plot is accessible.'})
+        cleaned_data = super().clean()
+        form_validator = PlotLogEntryFormValidator(
+            cleaned_data=cleaned_data,
+            instance=self.instance)
+        form_validator.validate()
         return cleaned_data
 
     class Meta:
