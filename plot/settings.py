@@ -144,6 +144,7 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 KEY_PATH = os.path.join(BASE_DIR, 'crypto_fields')
+GIT_DIR = BASE_DIR
 
 ANONYMOUS_ENABLED = True
 CURRENT_MAP_AREA = 'test_community'
