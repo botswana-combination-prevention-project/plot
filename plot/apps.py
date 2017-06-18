@@ -1,14 +1,10 @@
 # coding=utf-8
 
-import os
-import sys
-
 from dateutil.relativedelta import relativedelta
 
 from django.apps import AppConfig as DjangoAppConfig, apps as django_apps
 from django.utils import timezone
 from django.conf import settings
-from django.core.management.color import color_style
 
 from edc_base.utils import get_utcnow
 from edc_constants.constants import CLOSED, OPEN
@@ -81,8 +77,6 @@ if settings.APP_NAME == 'plot':
     from edc_map.apps import AppConfig as BaseEdcMapAppConfig
     from edc_device.apps import AppConfig as BaseEdcDeviceAppConfig, DevicePermission
     from edc_device.constants import CENTRAL_SERVER, CLIENT, NODE_SERVER
-    from survey.apps import AppConfig as BaseSurveyAppConfig
-    from survey import S
 
     class EdcMapAppConfig(BaseEdcMapAppConfig):
         verbose_name = 'Test Mappers'

@@ -34,7 +34,9 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
     """A model created by the system and updated by the user to
     represent a Plot in the community.
     """
-    search_slug_fields = ['plot_identifier', 'map_area', 'cso_number']
+
+    def get_search_slug_fields(self):
+        return ['plot_identifier', 'map_area', 'cso_number']
 
     report_datetime = models.DateTimeField(
         validators=[datetime_not_future],
