@@ -8,9 +8,10 @@ from edc_base.utils import get_utcnow
 from ..constants import ACCESSIBLE, RESIDENTIAL_HABITABLE
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
+from unittest.case import TestCase
 
 
-class PlotTestMixin:
+class PlotTestHelper(TestCase):
 
     """A TestMixin class that adds methods specific to Plot processes.
     """

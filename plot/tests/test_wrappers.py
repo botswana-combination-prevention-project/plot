@@ -6,16 +6,18 @@ from edc_model_wrapper import ModelWrapperError
 from ..model_wrappers import PlotWithLogEntryModelWrapper
 from ..models import Plot
 from .mappers import TestPlotMapper
-from .plot_test_mixin import PlotTestMixin
+from .plot_test_helper import PlotTestHelper
 
 
 @tag('wrappers')
-class TestWrappers(PlotTestMixin, TestCase):
+class TestWrappers(TestCase):
+
+    plot_helper = PlotTestHelper()
 
     def setUp(self):
         site_mappers.registry = {}
         site_mappers.register(TestPlotMapper)
-        self.plot = self.make_confirmed_plot()
+        self.plot = self.plot_helper.make_confirmed_plot()
 
     def test_plot_wrapper(self):
         PlotWithLogEntryModelWrapper(model_obj=self.plot)

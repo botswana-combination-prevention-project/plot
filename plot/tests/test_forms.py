@@ -7,18 +7,20 @@ from edc_map.site_mappers import site_mappers
 
 from ..forms import PlotForm, PlotLogForm, PlotLogEntryForm
 from ..models import Plot, PlotLog, PlotLogEntry
-from .plot_test_mixin import PlotTestMixin
+from .plot_test_helper import PlotTestHelper
 from .mappers import TestPlotMapper
 
 
-class TestForms(PlotTestMixin, TestCase):
+class TestForms(TestCase):
+
+    plot_helper = PlotTestHelper()
 
     def setUp(self):
         django_apps.app_configs['edc_device'].device_id = '99'
         site_mappers.registry = {}
         site_mappers.loaded = False
         site_mappers.register(TestPlotMapper)
-        self.plot = self.make_plot(htc=True, selected=None)
+        self.plot = self.plot_helper.make_plot(htc=True, selected=None)
 
     def test_plot_form_persisted(self):
         form = PlotForm(data=self.plot.__dict__, instance=self.plot)
