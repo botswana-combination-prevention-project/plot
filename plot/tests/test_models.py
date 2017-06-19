@@ -12,6 +12,7 @@ from edc_sync.models import OutgoingTransaction
 from edc_sync.test_mixins import SyncTestSerializerMixin
 
 from household.models import Household
+from survey.tests import SurveyTestHelper
 
 from ..constants import (
     RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE, TWENTY_PERCENT)
@@ -88,8 +89,10 @@ class TestPlotCreateCommunity(TestCase):
 class TestPlot(TestCase):
 
     plot_helper = PlotTestHelper()
+    survey_helper = SurveyTestHelper()
 
     def setUp(self):
+        self.survey_helper.load_test_surveys()
         django_apps.app_configs['edc_device'].device_id = '99'
         site_mappers.registry = {}
         site_mappers.loaded = False
