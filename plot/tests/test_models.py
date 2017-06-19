@@ -8,23 +8,18 @@ from edc_device.constants import CLIENT, CENTRAL_SERVER
 from edc_map.exceptions import MapperError
 from edc_map.site_mappers import site_mappers
 from edc_map.validators import is_valid_map_area
-from edc_sync.models import OutgoingTransaction
-from edc_sync.test_mixins import SyncTestSerializerMixin
 
 from household.models import Household
 from survey.tests import SurveyTestHelper
 
-from ..constants import (
-    RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE, TWENTY_PERCENT)
-from ..exceptions import (
-    PlotIdentifierError, MaxHouseholdsExceededError,
-    PlotEnrollmentError, PlotCreateError,
-    CreateHouseholdError, PlotConfirmationError)
+from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE, TWENTY_PERCENT
+from ..exceptions import CreateHouseholdError, PlotConfirmationError
+from ..exceptions import PlotEnrollmentError, PlotCreateError
+from ..exceptions import PlotIdentifierError, MaxHouseholdsExceededError
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
-from ..sync_models import sync_models
-from .plot_test_helper import PlotTestHelper
 from .mappers import TestPlotMapper
+from .plot_test_helper import PlotTestHelper
 
 
 class TestPlotCreatePermissions(TestCase):
@@ -356,38 +351,3 @@ class TestPlot(TestCase):
     def test_plot_identifier_community(self):
         plot = self.plot_helper.make_confirmed_plot()
         self.assertIsNotNone(plot.community)
-
-
-class TestNaturalKey(SyncTestSerializerMixin, TestCase):
-
-    plot_helper = PlotTestHelper()
-
-    def setUp(self):
-        django_apps.app_configs['edc_device'].device_id = '99'
-        site_mappers.registry = {}
-        site_mappers.loaded = False
-        site_mappers.register(TestPlotMapper)
-
-    def test_natural_key_attrs(self):
-        self.sync_test_natural_key_attr('plot')
-
-    def test_get_by_natural_key_attr(self):
-        self.sync_test_get_by_natural_key_attr('plot')
-
-    def test_sync_test_natural_keys(self):
-        self.plot_helper.make_confirmed_plot(household_count=1)
-        verbose = False
-        model_objs = []
-        completed_model_objs = {}
-        completed_model_lower = []
-        for outgoing_transaction in OutgoingTransaction.objects.all():
-            if outgoing_transaction.tx_name in sync_models:
-                model_cls = django_apps.get_app_config('plot').get_model(
-                    outgoing_transaction.tx_name.split('.')[1])
-                obj = model_cls.objects.get(pk=outgoing_transaction.tx_pk)
-                if outgoing_transaction.tx_name in completed_model_lower:
-                    continue
-                model_objs.append(obj)
-                completed_model_lower.append(outgoing_transaction.tx_name)
-        completed_model_objs.update({'plot': model_objs})
-        self.sync_test_natural_keys(completed_model_objs, verbose=verbose)
