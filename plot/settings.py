@@ -152,7 +152,7 @@ DEVICE_ID = '99'
 DEVICE_ROLE = CENTRAL_SERVER
 SURVEY_GROUP_NAME = 'test_survey'
 SURVEY_SCHEDULE_NAME = 'year-1'
-
+LOAD_SURVEYS = 'manual'
 # edc_map
 GPS_FILE_NAME = '/Volumes/GARMIN/GPX/temp.gpx'
 GPS_DEVICE = '/Volumes/GARMIN/'
