@@ -18,10 +18,9 @@ from edc_search.model_mixins import SearchSlugModelMixin, SearchSlugManager
 
 from ..choices import PLOT_STATUS
 from ..constants import INACCESSIBLE
-from ..exceptions import PlotEnrollmentError
 from ..managers import PlotManager as BasePlotManager
 from ..model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin
-from ..model_mixins import PlotEnrollmentMixin, PlotConfirmationMixin
+from ..model_mixins import PlotEnrollmentMixin, PlotConfirmationMixin, PlotEnrollmentError
 
 
 class PlotManager(BasePlotManager, SearchSlugManager):

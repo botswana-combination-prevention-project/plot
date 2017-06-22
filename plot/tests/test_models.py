@@ -13,9 +13,9 @@ from household.models import Household
 from survey.tests import SurveyTestHelper
 
 from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE, TWENTY_PERCENT
-from ..exceptions import CreateHouseholdError, PlotConfirmationError
-from ..exceptions import PlotEnrollmentError, PlotCreateError
-from ..exceptions import PlotIdentifierError, MaxHouseholdsExceededError
+from ..model_mixins import CreateHouseholdError, PlotConfirmationError
+from ..model_mixins import PlotEnrollmentError, PlotCreateError
+from ..model_mixins import PlotIdentifierError, MaxHouseholdsExceededError
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
 from .mappers import TestPlotMapper
