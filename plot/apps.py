@@ -50,14 +50,6 @@ class AppConfig(DjangoAppConfig):
         edc_device_app_config = django_apps.get_app_config('edc_device')
         return f'{site_mappers.current_map_code}{edc_device_app_config.device_id}00-00'
 
-#     @property
-#     def clinic_plot_identifiers(self):
-#         from edc_map.site_mappers import site_mappers
-#         return [
-#             f'{site_mappers.current_map_code}0000-00',
-#             f'{site_mappers.current_map_code}00000-0',
-#         ]
-
     def excluded_plot(self, obj):
         """Returns True if the plot is excluded from being surveyed.
 
@@ -75,8 +67,6 @@ class AppConfig(DjangoAppConfig):
 if settings.APP_NAME == 'plot':
 
     from edc_map.apps import AppConfig as BaseEdcMapAppConfig
-    from edc_device.apps import AppConfig as BaseEdcDeviceAppConfig, DevicePermission
-    from edc_device.constants import CENTRAL_SERVER, CLIENT, NODE_SERVER
 
     class EdcMapAppConfig(BaseEdcMapAppConfig):
         verbose_name = 'Test Mappers'
@@ -87,14 +77,3 @@ if settings.APP_NAME == 'plot':
         identifier_field_attr = 'plot_identifier'
         # Extra filter boolean attribute name.
         extra_filter_field_attr = 'enrolled'
-
-    class EdcDeviceAppConfig(BaseEdcDeviceAppConfig):
-        use_settings = True
-        device_id = settings.DEVICE_ID
-        device_role = settings.DEVICE_ROLE
-        device_permissions = {
-            'plot.plot': DevicePermission(
-                model='plot.plot',
-                create_roles=[CENTRAL_SERVER, CLIENT],
-                change_roles=[NODE_SERVER, CENTRAL_SERVER, CLIENT])
-        }

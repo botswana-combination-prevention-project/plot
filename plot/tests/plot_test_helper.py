@@ -29,9 +29,10 @@ class PlotTestHelper(TestCase):
             pass
         opts['report_datetime'] = options.get(
             'report_datetime', get_utcnow())
+        opts['plot_identifier'] = options.get(
+            'plot_identifier')
         plot = mommy.make_recipe(
             'plot.plot',
-            plot_identifier=None,
             **opts)
 
         self.assertFalse(plot.confirmed)

@@ -11,6 +11,8 @@ from edc_base.model_validators import datetime_not_future
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
 from edc_device.model_mixins import DeviceModelMixin
+from edc_device import DevicePermissions, DeviceAddPermission
+from edc_device import CENTRAL_SERVER
 from edc_map.exceptions import MapperError
 from edc_map.model_mixins import MapperModelMixin
 from edc_map.site_mappers import site_mappers
@@ -23,11 +25,20 @@ from ..model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin
 from ..model_mixins import PlotEnrollmentMixin, PlotConfirmationMixin, PlotEnrollmentError
 
 
+class PlotDeviceAddPermission(DeviceAddPermission):
+
+    def model_operation(self, model_obj=None, **kwargs):
+        model_operation = super().model_operation(model_obj, **kwargs)
+        if model_operation and model_obj.description != 'anonymous':
+            return self.label
+        return None
+
+
 class PlotManager(BasePlotManager, SearchSlugManager):
     pass
 
 
-class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
+class Plot(MapperModelMixin, PlotIdentifierModelMixin,
            PlotEnrollmentMixin, PlotConfirmationMixin,
            CreateHouseholdsModelMixin, SearchSlugModelMixin, BaseUuidModel):
     """A model created by the system and updated by the user to
@@ -157,8 +168,10 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
     def community(self):
         return self.map_area
 
-    class Meta:
+    class Meta(DeviceModelMixin.Meta):
         app_label = 'plot'
         ordering = ['-plot_identifier', ]
         unique_together = (('gps_target_lat', 'gps_target_lon'),)
         household_model = 'household.household'
+        device_permissions = DevicePermissions(
+            PlotDeviceAddPermission(device_roles=[CENTRAL_SERVER]))

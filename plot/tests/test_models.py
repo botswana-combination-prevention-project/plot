@@ -1,10 +1,11 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from django.test import TestCase, tag
+from django.test.utils import override_settings
 from model_mommy import mommy
 
 from edc_base.utils import get_utcnow
-from edc_device.constants import CLIENT, CENTRAL_SERVER
+from edc_device import DevicePermissionAddError, CLIENT, CENTRAL_SERVER
 from edc_map.exceptions import MapperError
 from edc_map.site_mappers import site_mappers
 from edc_map.validators import is_valid_map_area
@@ -14,10 +15,11 @@ from survey.tests import SurveyTestHelper
 
 from ..constants import RESIDENTIAL_HABITABLE, INACCESSIBLE, ACCESSIBLE, TWENTY_PERCENT
 from ..model_mixins import CreateHouseholdError, PlotConfirmationError
+from ..model_mixins import MaxHouseholdsExceededError
 from ..model_mixins import PlotEnrollmentError, PlotCreateError
-from ..model_mixins import PlotIdentifierError, MaxHouseholdsExceededError
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
+from ..utils import get_anonymous_plot
 from .mappers import TestPlotMapper
 from .plot_test_helper import PlotTestHelper
 
@@ -31,43 +33,55 @@ class TestPlotCreatePermissions(TestCase):
     def test_create_plot_server(self):
         """Asserts a plot may be created by a server.
         """
-        django_apps.app_configs['edc_device'].device_id = '99'
-        django_apps.app_configs['edc_device'].device_role = CENTRAL_SERVER
-        edc_device_app_config = django_apps.get_app_config('edc_device')
-        self.assertEqual(edc_device_app_config.role, CENTRAL_SERVER)
-        try:
-            self.plot_helper.make_plot()
-        except PlotIdentifierError:
-            self.fail('PlotIdentifierError unexpectedly raised')
+        with override_settings(DEVICE_ID=None, DEVICE_ROLE=None):
+            django_apps.app_configs['edc_device'].device_id = '99'
+            django_apps.app_configs['edc_device'].device_role = CENTRAL_SERVER
+            edc_device_app_config = django_apps.get_app_config('edc_device')
+            self.assertEqual(edc_device_app_config.device_role, CENTRAL_SERVER)
+            try:
+                self.plot_helper.make_plot()
+            except DevicePermissionAddError:
+                self.fail('DevicePermissionAddError unexpectedly raised')
 
-    def test_create_plot_client(self):
-        django_apps.app_configs['edc_device'].device_id = '00'
-        django_apps.app_configs['edc_device'].device_role = CLIENT
-        edc_device_app_config = django_apps.get_app_config('edc_device')
-        self.assertEqual(edc_device_app_config.role, CLIENT)
-        try:
-            self.plot_helper.make_plot()
-        except PlotIdentifierError as e:
-            self.fail('PlotIdentifierError unexpectedly raised. '
-                      'Got {}'.format(e))
+    def test_create_plot_client_raises(self):
+        with override_settings(DEVICE_ID=None, DEVICE_ROLE=None):
+            django_apps.app_configs['edc_device'].device_id = '00'
+            django_apps.app_configs['edc_device'].device_role = CLIENT
+            edc_device_app_config = django_apps.get_app_config('edc_device')
+            self.assertEqual(edc_device_app_config.device_role, CLIENT)
+            self.assertRaises(
+                DevicePermissionAddError, self.plot_helper.make_plot)
+
+    def test_create_anonymous_plot_client_ok(self):
+        with override_settings(DEVICE_ID=None, DEVICE_ROLE=None):
+            django_apps.app_configs['edc_device'].device_id = '00'
+            django_apps.app_configs['edc_device'].device_role = CLIENT
+            edc_device_app_config = django_apps.get_app_config('edc_device')
+            self.assertEqual(edc_device_app_config.device_role, CLIENT)
+            try:
+                get_anonymous_plot()
+            except DevicePermissionAddError as e:
+                self.fail(
+                    f'DevicePermissionAddError unexpectedly raised. Got {e}')
 
     def test_create_plot_enrolled_cannot_unconfirm(self):
         """Assert cannot unconfirm an enrolled plot.
         """
-        django_apps.app_configs['edc_device'].device_id = '99'
-        django_apps.app_configs['edc_device'].device_role = CENTRAL_SERVER
-        plot = self.plot_helper.make_confirmed_plot()
-        django_apps.app_configs['edc_device'].device_id = '00'
-        django_apps.app_configs['edc_device'].device_role = CLIENT
-        edc_device_app_config = django_apps.get_app_config('edc_device')
-        self.assertEqual(edc_device_app_config.role, CLIENT)
-        plot.enrolled = True
-        plot.enrolled_datetime = get_utcnow()
-        plot.save()
-        plot = Plot.objects.get(pk=plot.pk)
-        plot.gps_confirmed_latitude = None
-        plot.gps_confirmed_longitude = None
-        self.assertRaises(PlotEnrollmentError, plot.save)
+        with override_settings(DEVICE_ID=None, DEVICE_ROLE=None):
+            django_apps.app_configs['edc_device'].device_id = '99'
+            django_apps.app_configs['edc_device'].device_role = CENTRAL_SERVER
+            plot = self.plot_helper.make_confirmed_plot()
+            django_apps.app_configs['edc_device'].device_id = '00'
+            django_apps.app_configs['edc_device'].device_role = CLIENT
+            edc_device_app_config = django_apps.get_app_config('edc_device')
+            self.assertEqual(edc_device_app_config.device_role, CLIENT)
+            plot.enrolled = True
+            plot.enrolled_datetime = get_utcnow()
+            plot.save()
+            plot = Plot.objects.get(pk=plot.pk)
+            plot.gps_confirmed_latitude = None
+            plot.gps_confirmed_longitude = None
+            self.assertRaises(PlotEnrollmentError, plot.save)
 
 
 class TestPlotCreateCommunity(TestCase):
