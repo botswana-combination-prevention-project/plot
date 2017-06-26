@@ -11,6 +11,9 @@ class PlotIdentifierError(Exception):
 
 
 class PlotIdentifier(ResearchIdentifier):
+    def __init__(self, map_code=None, **kwargs):
+        self.map_code = map_code
+        super().__init__(**kwargs)
 
     template = '{map_code}{sequence}'
     label = 'plot_identifier'
@@ -34,7 +37,7 @@ class PlotIdentifierModelMixin(models.Model):
             self.plot_identifier = PlotIdentifier(
                 map_code=site_mappers.get_mapper(
                     self.map_area).map_code,
-                study_site=site_mappers.get_mapper(
+                site_code=site_mappers.get_mapper(
                     self.map_area).map_code).identifier
         super().save(*args, **kwargs)
 
