@@ -169,7 +169,6 @@ class Plot(MapperModelMixin, PlotIdentifierModelMixin,
         return self.map_area
 
     class Meta(DeviceModelMixin.Meta):
-        app_label = 'plot'
         ordering = ['-plot_identifier', ]
         unique_together = (('gps_target_lat', 'gps_target_lon'),)
         household_model = 'household.household'

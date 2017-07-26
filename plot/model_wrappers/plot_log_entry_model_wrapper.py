@@ -6,7 +6,8 @@ from edc_model_wrapper.wrappers import ModelWrapper
 class PlotLogEntryModelWrapper(ModelWrapper):
 
     model = 'plot.plotlogentry'
-    next_url_name = django_apps.get_app_config('plot').listboard_url_name
+    next_url_name = django_apps.get_app_config(
+        'plot_dashboard').listboard_url_name
     next_url_attrs = ['plot_identifier']
 
     @property

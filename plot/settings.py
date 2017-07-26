@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'edc_sync.apps.AppConfig',
     'survey.apps.AppConfig',
     'plot.apps.EdcMapAppConfig',
+    'plot_dashboard.apps.AppConfig',
     'plot.apps.AppConfig',
 ]
 

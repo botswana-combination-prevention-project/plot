@@ -28,7 +28,6 @@ class Enrollment:
 
 class AppConfig(DjangoAppConfig):
     name = 'plot'
-    admin_site_name = 'plot_admin'
     enrollment = Enrollment(
         timezone.now() - relativedelta(years=1),
         timezone.now() + relativedelta(years=1))
@@ -36,8 +35,6 @@ class AppConfig(DjangoAppConfig):
     special_locations = ['clinic', 'mobile']  # see plot.location_name
     add_plot_map_areas = ['test_community']
     supervisor_groups = ['field_supervisor']
-
-    listboard_url_name = 'plot_dashboard:listboard_url'
 
     def ready(self):
         from plot.signals import (

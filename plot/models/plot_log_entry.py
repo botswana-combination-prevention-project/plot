@@ -79,6 +79,5 @@ class PlotLogEntry(BaseUuidModel):
             self.plot_log, self.report_datetime.strftime('%Y-%m-%d'))
 
     class Meta:
-        app_label = 'plot'
         unique_together = ('plot_log', 'report_datetime')
         ordering = ('report_datetime', )
