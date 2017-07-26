@@ -12,3 +12,4 @@ git+https://github.com/botswana-harvard/edc-sync@develop#edc-sync
 git+https://github.com/botswana-harvard/household@develop#household
 git+https://github.com/botswana-harvard/survey@develop#survey
 git+https://github.com/botswana-harvard/plot-form-validators@develop#plot-form-validators
+git+https://github.com/botswana-harvard/plot-dashboard@develop#plot-dashboard
