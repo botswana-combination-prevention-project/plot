@@ -12,8 +12,8 @@ from .models import Plot, PlotLog, PlotLogEntry
 
 class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.current_user = None
 
     plot_identifier = forms.CharField(
@@ -25,11 +25,15 @@ class PlotForm(CommonCleanModelFormMixin, forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         app_config = django_apps.get_app_config('plot')
+        try:
+            current_user = self.current_user
+        except AttributeError:
+            current_user = None
         form_validator = PlotFormValidator(
             add_plot_map_areas=app_config.add_plot_map_areas,
             special_locations=app_config.special_locations,
             supervisor_groups=app_config.supervisor_groups,
-            current_user=self.current_user,
+            current_user=current_user,
             cleaned_data=cleaned_data,
             instance=self.instance)
         form_validator.validate()

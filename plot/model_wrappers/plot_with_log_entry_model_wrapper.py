@@ -12,6 +12,7 @@ class PlotWithLogEntryModelWrapper(ModelWithLogWrapper):
     next_url_name = django_apps.get_app_config(
         'plot_dashboard').listboard_url_name
     next_url_attrs = ['plot_identifier']
+    querystring_attrs = ['plot_log', 'plot_identifier']
 
     @property
     def plot(self):
