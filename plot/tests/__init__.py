@@ -1,1 +1,2 @@
-from .plot_test_mixin import PlotTestMixin
+from .mappers import TestPlotMapper
+from .plot_test_helper import PlotTestHelper

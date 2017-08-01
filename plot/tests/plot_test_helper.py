@@ -2,14 +2,16 @@
 
 from dateutil.relativedelta import relativedelta
 from model_mommy import mommy
+from unittest.case import TestCase
+
+from edc_base.utils import get_utcnow
 
 from ..constants import ACCESSIBLE, RESIDENTIAL_HABITABLE
 from ..models import Plot, PlotLog, PlotLogEntry
 from ..mommy_recipes import fake
-from edc_base.utils import get_utcnow
 
 
-class PlotTestMixin:
+class PlotTestHelper(TestCase):
 
     """A TestMixin class that adds methods specific to Plot processes.
     """
@@ -26,10 +28,11 @@ class PlotTestMixin:
         except KeyError:
             pass
         opts['report_datetime'] = options.get(
-            'report_datetime', self.get_utcnow())
+            'report_datetime', get_utcnow())
+        opts['plot_identifier'] = options.get(
+            'plot_identifier')
         plot = mommy.make_recipe(
             'plot.plot',
-            plot_identifier=None,
             **opts)
 
         self.assertFalse(plot.confirmed)
@@ -57,7 +60,7 @@ class PlotTestMixin:
         plot = self.make_plot(**options)
 
         options['report_datetime'] = options.get(
-            'report_datetime', self.get_utcnow())
+            'report_datetime', get_utcnow())
 
         self.add_plot_log_entry(
             plot=plot, log_status=ACCESSIBLE,

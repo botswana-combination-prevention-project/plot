@@ -10,31 +10,43 @@ from edc_base.model_mixins import BaseUuidModel
 from edc_base.model_validators import datetime_not_future
 from edc_base.utils import get_utcnow
 from edc_constants.choices import TIME_OF_WEEK, TIME_OF_DAY
-from edc_dashboard.model_mixins import SearchSlugManager
 from edc_device.model_mixins import DeviceModelMixin
+from edc_device import DevicePermissions, DeviceAddPermission
+from edc_device import CENTRAL_SERVER
 from edc_map.exceptions import MapperError
 from edc_map.model_mixins import MapperModelMixin
 from edc_map.site_mappers import site_mappers
+from edc_search.model_mixins import SearchSlugModelMixin, SearchSlugManager
 
 from ..choices import PLOT_STATUS
 from ..constants import INACCESSIBLE
-from ..exceptions import PlotEnrollmentError
-from ..managers import (PlotManager as BasePlotManager)
-from ..model_mixins import (
-    PlotIdentifierModelMixin, CreateHouseholdsModelMixin,
-    PlotEnrollmentMixin, PlotConfirmationMixin, SearchSlugModelMixin)
+from ..managers import PlotManager as BasePlotManager
+from ..model_mixins import PlotIdentifierModelMixin, CreateHouseholdsModelMixin
+from ..model_mixins import PlotEnrollmentMixin, PlotConfirmationMixin, PlotEnrollmentError
+
+
+class PlotDeviceAddPermission(DeviceAddPermission):
+
+    def model_operation(self, model_obj=None, **kwargs):
+        model_operation = super().model_operation(model_obj, **kwargs)
+        if model_operation and model_obj.description != 'anonymous':
+            return self.label
+        return None
 
 
 class PlotManager(BasePlotManager, SearchSlugManager):
     pass
 
 
-class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
+class Plot(MapperModelMixin, PlotIdentifierModelMixin,
            PlotEnrollmentMixin, PlotConfirmationMixin,
            CreateHouseholdsModelMixin, SearchSlugModelMixin, BaseUuidModel):
     """A model created by the system and updated by the user to
     represent a Plot in the community.
     """
+
+    def get_search_slug_fields(self):
+        return ['plot_identifier', 'map_area', 'cso_number']
 
     report_datetime = models.DateTimeField(
         validators=[datetime_not_future],
@@ -127,15 +139,14 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
         return (self.plot_identifier, )
 
     def common_clean(self):
+        """Asserts the plot map_area is a valid map_area and that
+        an enrolled plot cannot be unconfirmed.
+        """
         if self.map_area not in site_mappers.map_areas:
-            msg = (
-                'Invalid map area. Valid map areas are %(map_areas)s. '
-                'Got %(map_area)s')
-            params = {'map_area': self.map_area,
-                      'map_areas': ', '.join(site_mappers.map_areas)}
-            field = 'map_area'
-            raise MapperError(msg.format(**params), field, params, msg)
-        if self.id:
+            raise MapperError(
+                f'Invalid map area. Got \'{self.map_area}\'. Site mapper expects one '
+                f'of map_areas={site_mappers.map_areas}.')
+        elif self.id:
             try:
                 self.get_confirmed()
             except MapperError:
@@ -157,8 +168,9 @@ class Plot(MapperModelMixin, DeviceModelMixin, PlotIdentifierModelMixin,
     def community(self):
         return self.map_area
 
-    class Meta:
-        app_label = 'plot'
+    class Meta(DeviceModelMixin.Meta):
         ordering = ['-plot_identifier', ]
         unique_together = (('gps_target_lat', 'gps_target_lon'),)
         household_model = 'household.household'
+        device_permissions = DevicePermissions(
+            PlotDeviceAddPermission(device_roles=[CENTRAL_SERVER]))

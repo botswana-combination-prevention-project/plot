@@ -1,29 +1,35 @@
 # coding=utf-8
 
-import sys
 import os
-from survey.apps import S
+import sys
+from pathlib import PurePath
+from django.core.management.color import color_style
+
+from edc_device.constants import CENTRAL_SERVER
+
+style = color_style()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ETC_DIR = os.path.join(str(PurePath(BASE_DIR).parent), 'etc')
 
-
+APP_NAME = 'plot'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
+DEBUG = True
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = ')78^w@s3^kt)6lu6()tomqjg#8_%!381-nx5dtu#i=kn@68h_^'
+CONFIG_FILE = '{}.conf'.format(APP_NAME)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-ALLOWED_HOSTS = []
+# CONFIG_PATH = os.path.join(ETC_DIR, APP_NAME, CONFIG_FILE)
+# sys.stdout.write(style.SUCCESS('Reading config from {}\n'.format(CONFIG_PATH)))
+#
+# config = configparser.RawConfigParser()
+# config.read(os.path.join(CONFIG_PATH))
 
-CURRENT_SURVEYS = [
-    S('example-survey.example-survey-1.annual.test_community'),
-    S('example-survey.example-survey-2.annual.test_community'),
-    S('example-survey.example-survey-3.annual.test_community')
-]
 
 # Application definition
 INSTALLED_APPS = [
@@ -34,27 +40,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
-    'rest_framework',
     'rest_framework.authtoken',
     'django_crypto_fields.apps.AppConfig',
     'django_revision.apps.AppConfig',
     'edc_base.apps.AppConfig',
-    'edc_consent.apps.AppConfig',
     'edc_identifier.apps.AppConfig',
     'edc_protocol.apps.AppConfig',
-    'edc_sync.apps.AppConfig',
-    'member.apps.AppConfig',
-    'example_survey.apps.EdcMapAppConfig',
     'household.apps.AppConfig',
+    'edc_device.apps.AppConfig',
+    'edc_search.apps.AppConfig',
+    'edc_sync.apps.AppConfig',
     'survey.apps.AppConfig',
+    'plot.apps.EdcMapAppConfig',
+    'plot_dashboard.apps.AppConfig',
     'plot.apps.AppConfig',
-    'example_survey.apps.EdcBaseTestAppConfig',
-    'example_survey.apps.AppConfig',
-    'example_survey.apps.EdcDeviceAppConfig',
 ]
-
-# if 'test' in sys.argv:
-#     INSTALLED_APPS = INSTALLED_APPS = ['example_survey.apps.AppConfig']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -95,39 +95,14 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
-
-# and 'mysql' not in DATABASES.get('default').get('ENGINE'):
-if 'test' in sys.argv:
-    MIGRATION_MODULES = {
-        "django_crypto_fields": None,
-        "edc_call_manager": None,
-        "edc_appointment": None,
-        "edc_call_manager": None,
-        "edc_consent": None,
-        "edc_death_report": None,
-        "edc_export": None,
-        "edc_identifier": None,
-        "edc_metadata": None,
-        "edc_rule_groups": None,
-        "edc_registration": None,
-        "edc_sync": None,
-        "bcpp": None,
-        "bcpp_subject": None,
-        "plot": None,
-        "household": None,
-        "member": None,
-        "survey": None,
-        'admin': None,
-        "auth": None,
-        'bcpp_map': None,
-        'contenttypes': None,
-        'sessions': None,
-    }
-if 'test' in sys.argv:
-    PASSWORD_HASHERS = ('django_plainpasswordhasher.PlainPasswordHasher', )
-if 'test' in sys.argv:
-    DEFAULT_FILE_STORAGE = 'inmemorystorage.InMemoryStorage'
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {
+#             'read_default_file': os.path.join(ETC_DIR, 'mysql_test.conf'),
+#         },
+#     },
+# }
 
 
 # Password validation
@@ -149,7 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
@@ -167,16 +141,35 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'plot', 'media')
-DEVICE_ID = '99'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+KEY_PATH = os.path.join(BASE_DIR, 'crypto_fields')
+GIT_DIR = BASE_DIR
 
+ANONYMOUS_ENABLED = True
+CURRENT_MAP_AREA = 'test_community'
+DEVICE_ID = '99'
+DEVICE_ROLE = CENTRAL_SERVER
+SURVEY_GROUP_NAME = 'test_survey'
+SURVEY_SCHEDULE_NAME = 'year-1'
+LOAD_SURVEYS = 'manual'
 # edc_map
 GPS_FILE_NAME = '/Volumes/GARMIN/GPX/temp.gpx'
 GPS_DEVICE = '/Volumes/GARMIN/'
 GPX_TEMPLATE = os.path.join(STATIC_ROOT, 'edc_map/gpx/template.gpx')
 
-CURRENT_MAP_AREA = 'test_community'
+
+if 'test' in sys.argv:
+
+    class DisableMigrations:
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    MIGRATION_MODULES = DisableMigrations()
+    PASSWORD_HASHERS = ('django.contrib.auth.hashers.MD5PasswordHasher', )
+    DEFAULT_FILE_STORAGE = 'inmemorystorage.InMemoryStorage'

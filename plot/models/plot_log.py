@@ -32,6 +32,3 @@ class PlotLog(BaseUuidModel):
     def natural_key(self):
         return self.plot.natural_key()
     natural_key.dependencies = ['plot.plot']
-
-    class Meta:
-        app_label = 'plot'
