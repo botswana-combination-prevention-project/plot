@@ -11,6 +11,7 @@ class PlotWithLogEntryModelWrapper(ModelWithLogWrapper):
     log_entry_model_wrapper_cls = PlotLogEntryModelWrapper
     next_url_name = django_apps.get_app_config(
         'plot_dashboard').listboard_url_name
+    url_namespace = 'plot_dashboard'
     next_url_attrs = ['plot_identifier']
     querystring_attrs = ['plot_log', 'plot_identifier']
 
