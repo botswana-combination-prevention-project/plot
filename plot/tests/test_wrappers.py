@@ -1,15 +1,13 @@
 from django.test import TestCase, tag
-
 from edc_map.site_mappers import site_mappers
 from edc_model_wrapper import ModelWrapperError
+from plot_dashboard.model_wrappers import PlotWithLogEntryModelWrapper
 
-from ..model_wrappers import PlotWithLogEntryModelWrapper
 from ..models import Plot
 from .mappers import TestPlotMapper
 from .plot_test_helper import PlotTestHelper
 
 
-@tag('wrappers')
 class TestWrappers(TestCase):
 
     plot_helper = PlotTestHelper()
